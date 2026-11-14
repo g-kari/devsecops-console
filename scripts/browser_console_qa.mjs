@@ -10,6 +10,7 @@ import { readFile, writeFile, mkdir, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { isIP } from 'node:net';
 import { PassThrough } from 'node:stream';
+import { createStartupDiagnostics, startupObserve, fitStartupDiagnosticBudget } from './browser_startup_diagnostics.mjs';
 const MAX_PACKET=16*1024*1024, MAX_PNG=512*1024, IMAGE_BUDGET=7*1024*1024;
 const sha256=b=>createHash('sha256').update(b).digest('hex');
 const delay=ms=>new Promise(resolve=>setTimeout(resolve, ms));
@@ -40,8 +41,10 @@ function argumentsMap(args) {
   return r;
 }
 class CDP {
-  constructor(input, output) {
+  constructor(input, output, startupDiagnostics) {
     this.input=input;
+    this.output=output;
+    this.startupDiagnostics=startupDiagnostics;
     this.buffer=Buffer.alloc(0);
     this.next=0;
     this.pending=new Map();
@@ -50,11 +53,12 @@ class CDP {
     this.receivedBytes=0;
     this.receivedMessages=0;
     output.on('data', b=>this.accept(b));
-    output.on('error', e=>this.close(e));
-    output.on('end', ()=>this.close(new Error('CDP pipe ended')));
-    input.on('error', e=>this.close(e));
+    output.on('error', e=>this.close(e, 'output_error'));
+    output.on('end', ()=>this.close(new Error('CDP pipe ended'), 'output_end'));
+    input.on('error', e=>this.close(e, 'input_error'));
   }
   accept(chunk) {
+    startupObserve(this.startupDiagnostics, 'data', chunk.length);
     this.receivedBytes+=chunk.length;
     try {
       this.buffer=Buffer.concat([this.buffer, chunk]);
@@ -63,12 +67,14 @@ class CDP {
       while((end=this.buffer.indexOf(0))>=0) {
         const message=JSON.parse(this.buffer.subarray(0, end).toString('utf8'));
         this.receivedMessages++;
+        startupObserve(this.startupDiagnostics, 'message', message);
         this.buffer=this.buffer.subarray(end+1);
         if(Number.isInteger(message.id)) {
           const p=this.pending.get(message.id);
           if(p) {
             clearTimeout(p.timer);
             this.pending.delete(message.id);
+            startupObserve(this.startupDiagnostics, 'settle', message.id, message.error?'protocol_error':'response');
             message.error?p.reject(new Error(`CDP ${p.method}: ${JSON.stringify(message.error)}`)):p.resolve(message.result?? {});
           }
         }else {
@@ -76,34 +82,45 @@ class CDP {
         }
       }
     }catch(e) {
-      this.close(e);
+      this.close(e, 'parse_error');
     }
   }
   call(method, params= {}, sessionId) {
-    if(this.closed)return Promise.reject(new Error('CDP is closed'));
-    if(this.pending.size>=64)return Promise.reject(new Error('CDP pending-command bound exceeded'));
+    if(this.closed){startupObserve(this.startupDiagnostics, 'notSent', method, 'client_closed');return Promise.reject(new Error('CDP is closed'));}
+    if(this.pending.size>=64){startupObserve(this.startupDiagnostics, 'notSent', method, 'pending_bound');return Promise.reject(new Error('CDP pending-command bound exceeded'));}
     const id=++this.next;
     return new Promise((resolve, reject)=> {
+      startupObserve(this.startupDiagnostics, 'command', method, id);
       const timer=setTimeout(()=> {
         this.pending.delete(id);
+        startupObserve(this.startupDiagnostics, 'settle', id, 'timeout');
         reject(new Error(`CDP timeout: ${method}`));
       }, 10000);
       this.pending.set(id, {
         resolve, reject, timer, method
       });
-      this.input.write(JSON.stringify( {
+      const frame=JSON.stringify( {
         id, method, params, ...(sessionId? {
           sessionId
         }
         : {})
-      })+'\0');
+      })+'\0';
+      const callback=startupObserve(this.startupDiagnostics, 'writeCallback', id);
+      try {
+        const accepted=callback?this.input.write(frame, callback):this.input.write(frame);
+        startupObserve(this.startupDiagnostics, 'write', id, Buffer.byteLength(frame), accepted);
+      }catch(e) {
+        startupObserve(this.startupDiagnostics, 'writeThrow', id, e);
+        throw e;
+      }
     });
   }
-  close(error) {
+  close(error, reason='transport_closed') {
     if(this.closed)return;
     this.closed=true;
-    for(const p of this.pending.values()) {
+    for(const [id,p] of this.pending) {
       clearTimeout(p.timer);
+      startupObserve(this.startupDiagnostics, 'settle', id, reason);
       p.reject(error);
     }
     this.pending.clear();
@@ -1244,6 +1261,7 @@ async function selfTest() {
     width:1440, height:1000
   });
   assert.throws(()=>pngSize(Buffer.alloc(24)));
+  await (await import('./test_browser_startup_diagnostics.mjs')).testStartupDiagnostics({CDP, fitTCPDiagnosticBudget});
   console.log('PASS stdlib-only framing/error/origin/DNS-policy/transport-audit/readiness-negative/bounded-parent-cleanup/TERM-zero-exit-rejection/UDP-source-chain-phase-result-lifetime-sanitization-and-bounds/contrast/PNG-header/argument self-tests; no Chrome, application, screenshot or network used');
 }
 async function main() {
@@ -1271,7 +1289,7 @@ async function main() {
   }, manifest= {
     synthetic:true, visual_review:'pending', metadata:fixture.metadata, as_of:fixture.as_of, images:[]
   };
-  let chromeStartedAt;
+  let chromeStartedAt, startupDiagnostics;
   let imageBytes=0, chrome, client, proxy, watchdog, chromeStderrBytes=0, fatal, exitCode, exitSignal, spawnError, proxyOrigin;
   let chromeParentCleanup= {
     parent_exit_observed:false, descendants:'unknown; see stability.json'
@@ -1561,22 +1579,28 @@ async function main() {
     assert(!flags.some(s=>/^--(no-sandbox|disable-setuid-sandbox|disable-web-security|ignore-certificate-errors)/.test(s)), 'unsafe browser flag');
     const chromeEnv=Object.fromEntries(['PATH', 'HOME', 'TMPDIR', 'LANG', 'LC_ALL'].filter(k=>process.env[k]!==undefined).map(k=>[k, process.env[k]]));
     chromeStartedAt=performance.now();
+    try {startupDiagnostics=createStartupDiagnostics(process.version, chromeStartedAt, ()=>performance.now());}catch { /* Diagnostics cannot block the existing spawn. */ }
     checks.startup={chrome_binary:path.basename(args['--chrome']),cdp_command_timeout_ms:10000};
     chrome=spawn(args['--chrome'], flags, {
       stdio:['ignore', 'ignore', 'pipe', 'pipe', 'pipe'], env:chromeEnv
     });
     chrome.stderr.on('data', b=> {
       chromeStderrBytes+=b.length;
+      startupObserve(startupDiagnostics, 'stderr', b);
     });
-    client=new CDP(chrome.stdio[3], chrome.stdio[4]);
+    client=new CDP(chrome.stdio[3], chrome.stdio[4], startupDiagnostics);
+    chrome.once('spawn', ()=>startupObserve(startupDiagnostics, 'spawn'));
+    chrome.once('close', ()=>startupObserve(startupDiagnostics, 'close'));
     chrome.on('error', e=> {
+      startupObserve(startupDiagnostics, 'childError', e);
       spawnError=e;
-      client.close(e);
+      client.close(e, 'child_error');
     });
     chrome.on('exit', (code, signal)=> {
       exitCode=code;
       exitSignal=signal;
-      client.close(new Error(`Chrome exited ${code}`));
+      startupObserve(startupDiagnostics, 'exit');
+      client.close(new Error(`Chrome exited ${code}`), 'child_exit');
     });
     watchdog=setTimeout(()=> {
       violation('browser QA real-time watchdog');
@@ -1764,6 +1788,7 @@ async function main() {
       buffered_bytes:client?.buffer.length??0,sent_commands:client?.next??0,
       chrome_stderr_bytes:chromeStderrBytes
     };
+    startupObserve(startupDiagnostics, 'failure', client);
     checks.error=scrubNetworkText(e.stack??e).slice(0, 16384);
     // Preserve decisive bounded evidence in the job log even after artifacts expire.
     console.error('FAIL browser navigation diagnostics',JSON.stringify({
@@ -1771,20 +1796,24 @@ async function main() {
     }));
   } finally {
     clearTimeout(watchdog);
+    startupObserve(startupDiagnostics, 'cleanup', chrome, spawnError);
     if(chrome&&!spawnError) {
       try { await fetchDecisions.drain(); } catch(e) { violation(e.message); }
       chromeParentCleanup=await stopChromeParent(chrome, async()=> {
         try {
+          if(!client)startupObserve(startupDiagnostics, 'notSent', 'Browser.close', 'client_absent');
           await client?.call('Browser.close');
         }catch {
           /* Parent exit and Go supervisor determine cleanup, never this exception. */
         }
       });
+      startupObserve(startupDiagnostics, 'parentStopped');
       const cleanupProblem=chromeParentCleanupFailure(chromeParentCleanup);
       if(cleanupProblem)violation(cleanupProblem);
       try {
         assert((await stat(netlog)).size<=16*1024*1024, 'NetLog file exceeds audit bound');
         const log=JSON.parse(await readFile(netlog, 'utf8'));
+        startupObserve(startupDiagnostics, 'netlog', log);
         const report=netlogAudit(log, origins, networkPolicy(origins, proxyOrigin).endpoints);
         checks.network_audit=report;
         for(const problem of report.violations)violation(problem);
@@ -1808,6 +1837,8 @@ async function main() {
     checks.automated_status=!fatal&&checks.violations.length===0?'passed':'failed';
     checks.visual_review='pending';
     fitTCPDiagnosticBudget(checks);
+    // Legacy TCP projection and JSON-size failure take precedence over startup detail.
+    fitStartupDiagnosticBudget(checks, startupDiagnostics, client);
     await writeJSON('checks.json', checks);
     manifest.automated_status=checks.automated_status;
     manifest.configured_deadlines_ms=checks.configured_deadlines_ms?? {};
