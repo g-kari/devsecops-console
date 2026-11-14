@@ -1,27 +1,21 @@
 {
   "schemaVersion": 1,
   "project": "DevSecOps Console",
-  "checkedAt": "2026-11-14T16:15:08Z",
+  "checkedAt": "2026-11-14T19:29:08Z",
   "publishedSnapshotAt": "2026-11-13T20:28:00Z",
-  "lastSubstantiveProgressAt": "2026-11-14T15:51:18Z",
-  "lastSubstantiveProgressLabel": "PR #100初回の失敗実行から非空の限定TCP診断を取得。観測成果であり、起動/TCP原因は未修正",
-  "lastCodeMergeAt": "2026-11-14T15:01:11Z",
-  "mainSha": "3c74216bf797b2c9348e834fc360fcb169e96f24",
+  "lastSubstantiveProgressAt": "2026-11-14T19:16:16Z",
+  "lastSubstantiveProgressLabel": "PR #101の起動診断追加を統合。Checkは起動・UI検査後の旧TCP guardで失敗し原因未解明、Trialは6 readyを含め成功。失敗も含む新観測であり根因修復ではない",
+  "lastCodeMergeAt": "2026-11-14T19:03:05Z",
+  "mainSha": "c191deb9e366d01e5ba608ec84a24ed280a83882",
   "repository": "https://github.com/g-kari/devsecops-console",
   "scopeNote": "コード統合、各変更の検証、正式版収録、本番稼働を分ける。main SHA・PR一覧・CIはcheckedAt時点の観測値。成果時刻と公開JSONの配信commitは別。資料更新の統合・配信確認は対応するPRと作業記録で追跡する。 掲載PRはcheckedAt時点の歴史的観測であり、配信後の現在一覧を自動追跡した結果ではない。",
-  "currentFocus": "TCP観測追加の限定工程は統合済み。後続の資料PR #100初回でBrowser.getVersion起動timeoutとcleanup後の未完監査キー2件を別々に確認。起動/TCP根因は未修正で、担当と限定調査範囲を確定する。K275実ログイン/session/runtimeとIntel timeout根因も未解決",
-  "openPullRequests": [
-    {
-      "number": 100,
-      "title": "docs: TCP監査観測の実装状況をロードマップへ反映",
-      "url": "https://github.com/g-kari/devsecops-console/pull/100"
-    }
-  ],
+  "currentFocus": "PR #101の起動診断追加は統合済み。Checkは起動成功・32ケース後の旧TCP guardで失敗、原因未解明。Trialは全10job・6実ZIP検証まで成功。19:27 UTCに原因調査の活動を確認したが新しい修復候補はまだない。K275実ログイン/session/runtimeとIntel package timeout根因も未解決",
+  "openPullRequests": [],
   "ci": {
     "status": "failure",
-    "label": "直近main push 3c74216bはCheck全6/Trial全10job・6 readyがattempt 1成功（15:15:28まで）。その後の資料PR #100 head62fab6baの初回Checkはgo-checkだけ失敗、他5job成功。CJK準備/version/fc-match成功後のCDP起動timeoutで画面検査0、cleanup監査は旧unknown違反と新2キー/2record/省略0・3028bytes。PR #100初回Trialはattempt 1で失敗。4 native/buildのうち3job成功・Intelの1job失敗。internal/store package全体が600.094秒で10m timeoutし、alarm時の実行中test表示は4秒で単体が10分かかったとは断定しない。PRイベントではmain push限定のreadyは対象外。今回はmatrix未展開の1jobがskipで、6 ready成功や新たな6配布成果物の確認ではない。Intel timeout根因は未修正。 PR #99統合後mainの成功実行とPR #100初回実行は、同一アプリ/guardを保つ別headの検証で、同head再現試験ではない。正式v0.5.0不変。",
-    "url": "https://github.com/g-kari/devsecops-console/actions/runs/43611978190",
-    "checkedAt": "2026-11-14T16:15:08Z"
+    "label": "main c191deb9: 統合後Check attempt 1は失敗（go-checkの旧unfinished TCP guard、他5job成功）、TCP原因は未解明。Browser.getVersionは5933msで応答し32ケース/10フロー/29 PNGまで到達した後、finally監査の既存assertがexit1。新startupはfull・増分2307bytes、未完2監査キー/2record/省略0を保存。failure=nullはcatch時snapshot未取得の範囲で、全体成功ではない。Trial attempt 1は全10job・6 ready成功、同一SHAの6実ZIPのdigest/CRC/checksum/source-tree-run-attempt/manifestと全inner bytesを検証。PR headのCheck/Trial成功とは分け、PRイベントのreadyは対象外（1 logical job skip）。目視レビュー、配布UI/runtime・実機・署名公証・実loginは未検証。正式v0.5.0不変。",
+    "url": "https://github.com/g-kari/devsecops-console/actions/runs/43629954371",
+    "checkedAt": "2026-11-14T19:29:08Z"
   },
   "rows": [
     {
@@ -176,16 +170,40 @@
       "id": "K305",
       "title": "ブラウザーCIの起動診断",
       "phase": "品質",
-      "status": "blocked",
-      "owner": "根因修正の専任は未割当（記録上） / TCP観測の限定工程は終了",
-      "lastCheckedAt": "2026-11-14T16:15:08Z",
-      "lastProgressAt": "2026-11-14T15:51:18Z",
-      "activityAt": null,
-      "latestAchievement": "PR #99の上限付きTCP観測は統合済みで、PR/事後成功runの0キー・0record・省略0は当時の履歴として保持。後続PR #100初回CheckではCJK準備/version/fc-match成功後、Browser.getVersionが10033msでtimeoutしCDP受信0。ケース/フロー/PNGと画面font実使用観測は0。cleanup後の旧unfinished TCP違反を保持し、閉じたschemaの新限定診断3028bytesに2監査キー・2record・省略0を実CIで保存した。source44のTCP_CONNECT/ATTEMPTという同ID・別eventのキーで、物理2接続を示さない。各BEGINはendpoint total1/allowlisted1。観測追加の限定完了と根因修復は別。",
-      "waitReason": "Browser.getVersion起動原因とTCP根因は未修正。根因修正の専任は未割当（記録上）で優先順位により保留。初期CDP失敗とcleanup後監査の因果関係、正確な宛先・通信成立・漏洩・source所有関係は未確定。SOCKET_ALIVE ENDをTCPのENDと同一視しない。raw NetLogと生stderrは保持されず、保存projectionから全eventを再監査できない。今回のsource44を旧PR #93/#97へ遡及適用しない。新subtreeはraw URL/host/IPを追加しないが既存fieldsにはhost/path/IPがあり、global zero-egress保証ではない。_apt fallback warningも未調査。",
-      "nextAction": "優先順位を見て起動失敗とcleanup監査を別の限定調査として扱い、次の着手時に担当・範囲・実稼働と重複作業の有無を確認する。初回のdriver/guard両失敗、原artifactと旧履歴を保持し、監査キー数・numeric ID・BEGIN時endpoint件数の限界に沿って比較する。通信制約と旧guardを維持し、観測成果を原因修復や通信安全の証明と扱わない。",
+      "status": "active",
+      "owner": "原因調査を継続中 / 起動診断追加の限定工程は統合済み",
+      "lastCheckedAt": "2026-11-14T19:29:08Z",
+      "lastProgressAt": "2026-11-14T19:09:33Z",
+      "activityAt": "2026-11-14T19:27:21Z",
+      "latestAchievement": "PR #101で上限付きstartup診断をmain c191deb9へ統合。既存guard・allowlist・UDP・Chrome flags・timeout/retry・Go/workflowは不変。PR Checkは全6job成功、full増分2296bytes、getVersion応答848ms。統合後Checkは旧TCP guardで失敗（他5job成功）、原因未解明だが、起動timeoutなし・getVersion応答5933msで32ケース/10フロー/29 PNGまで到達した新観測を得た。full増分2307bytes、write51bytesのlocal処理9ms/first byte5932ms/応答5933msを区別し、Node v24.22.2とChrome157.0.8103.50のCDP/NetLog version一致を記録。NetLog revisionはinvalid/nullでrevision一致ではない。failure=nullはcatch時snapshot未取得を示すだけで、finally後の旧guard失敗・automated_status=failed・exit1を保持。既存TCP投影3028bytesは同run source44の2監査キー/2record/省略0、各BEGIN endpoint total1/allowlisted1。物理2接続を示さず、別runの同IDを同接続としない。Trialは全10job・6 ready成功し、6実ZIPのbytes/CRC/digest/checksum/manifest/source/tree/run/attemptと全inner bytesを確認。合成store不変・外部action0・残PID0、画像の目視レビューは未了。正常起動後にも旧unknownTCP guardが失敗する一例であり、startup/TCP根因修復ではない。",
+      "waitReason": "Browser.getVersion起動根因と旧unknownTCP根因は未修正・未解明。今回は起動timeoutがなくてもguard症状が出たが、原因の独立性、診断追加のタイミング影響、正確な宛先・通信成立・payload・漏洩・取消の原因/結果までは確定しない。SOCKET_ALIVE ENDをTCP_CONNECT/ATTEMPT ENDと同一視しない。同run context344/346/347/352とNetLog相対2244msはNode起動clockと同期せず、別runのsource44/index一致も同接続・同原因の証拠ではない。raw NetLogと生stderrは未保持で、保存projectionから全eventの再監査はできない。新subtreeはraw URL/host/IPを追加しないが既存fieldsにはhost/path/IPがあり、global zero-egress保証ではない。19:27 UTCに原因調査の活動を確認、新修復候補はまだない。旧PR100初回のstartup/TCP失敗とIntel package timeout失敗も保持し、単発成功を根因解消としない。従来の_apt fallback warningも未調査。",
+      "nextAction": "確認したChrome revisionのTCP lifecycleを公式sourceで読み取り調査し、既存guardと保存projectionが示す範囲を照合する。未検証のsource仮説を確定原因や修復成果として公開しない。起動timeoutとfinally監査を区別し、最初の失敗証拠を保ったまま、追加実装や試験が必要か判断する。緑化のためのretry・guard緩和・期限変更は行わない。",
       "dependencies": [],
       "evidence": [
+        {
+          "label": "PR #101（起動診断追加の限定統合）",
+          "url": "https://github.com/g-kari/devsecops-console/pull/101"
+        },
+        {
+          "label": "診断追加の統合main c191deb9",
+          "url": "https://github.com/g-kari/devsecops-console/commit/c191deb9e366d01e5ba608ec84a24ed280a83882"
+        },
+        {
+          "label": "PR #101 Check: 正常runの新startup診断",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43627602737/attempts/1"
+        },
+        {
+          "label": "統合後Check初回: 起動成功後の旧TCP guard失敗",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43629954371/attempts/1"
+        },
+        {
+          "label": "統合後の保存browser artifact",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43629954371/artifacts/14127583020"
+        },
+        {
+          "label": "統合後Trial: 全10job/6 readyと6実ZIP",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43629954368/attempts/1"
+        },
         {
           "label": "PR #100初回: 起動timeoutとcleanup未完TCP監査",
           "url": "https://github.com/g-kari/devsecops-console/actions/runs/43611978190/attempts/1"
@@ -847,14 +865,30 @@
       "phase": "公開資料",
       "status": "complete",
       "owner": "更新経路の限定工程完了 / 進捗同期は継続",
-      "lastCheckedAt": "2026-11-14T16:15:08Z",
-      "lastProgressAt": "2026-11-14T13:41:46Z",
+      "lastCheckedAt": "2026-11-14T19:29:08Z",
+      "lastProgressAt": "2026-11-14T17:36:20Z",
       "activityAt": null,
-      "latestAchievement": "PR #98をmain 2158d52aへ統合し、正本・raw・候補全文一致と既存公開Siteで12:49:23観測snapshot/12:40:52成果時刻・33工程・K305/K309詳細・PR #97実測ガント・検索/filter/reset・手動更新を確認済み。統合後Check全6jobとTrial全10jobはattempt 1成功。6 readyのCI実ログ・checksum・manifest・metadata/digestを照合したが、新たな6 ZIP全件の独立再取得・展開とは分ける。新たなモバイルQAやSite再配備は実施していない。",
+      "latestAchievement": "PR #100をmain 51970d05へ統合し、16:15:08観測snapshot/15:51:18診断成果時刻の公開正本・raw・候補全文一致と既存Siteの33工程、K305/K309詳細、実測ガント、検索/filter/reset・手動更新を確認。PR100初回Check/Trialの両失敗とPR99成功履歴を保持した。統合後Check全6job・Trial全10job/6 readyはattempt 1成功し、6実ZIPのCRC/digest/checksum/source-tree-run-attempt/manifest/全inner bytesも確認済み。公開・検証の完了確認は17:36 UTC。観測snapshotと配信commitを分離し、後続の実装・検証結果を継続同期する。新しいモバイルQAやSite再配備は実施していない。",
       "waitReason": "なし（公開データ読取・更新経路の限定工程）。実装状況の照合と公開資料の保守は継続。資料更新ごとの配信確認は対応するPR・作業記録で追跡する。",
       "nextAction": "確定した実装・検証結果を継続照合し、33工程と根拠を保った通常PRで更新する。同一head CI・独立レビュー・main読戻し・既存Site取得を更新ごとに確認。通常のJSON更新にSite再配備は不要。",
       "dependencies": [],
       "evidence": [
+        {
+          "label": "PR #100（初回失敗履歴を保持して統合・公開）",
+          "url": "https://github.com/g-kari/devsecops-console/pull/100"
+        },
+        {
+          "label": "確認済み配信commit 51970d05の公開正本",
+          "url": "https://github.com/g-kari/devsecops-console/blob/51970d051494f89947aee12d70d9c613cd79b0e0/docs/site-roadmap.json"
+        },
+        {
+          "label": "PR #100統合後Check attempt 1成功",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43619220847/attempts/1"
+        },
+        {
+          "label": "PR #100統合後Trial attempt 1成功・6実ZIP確認",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43619220804/attempts/1"
+        },
         {
           "label": "PR #98（統合・公開・事後CI確認済み）",
           "url": "https://github.com/g-kari/devsecops-console/pull/98"
@@ -1228,9 +1262,80 @@
           "url": "https://github.com/g-kari/devsecops-console/pull/99"
         }
       ]
+    },
+    {
+      "id": "startup診断",
+      "title": "上限付きChrome起動診断の追加",
+      "start": "2026-11-14T18:37:03Z",
+      "end": "2026-11-14T19:03:05Z",
+      "basis": "PR作成からマージまでの観測期間。連続作業時間ではない。startup診断追加の限定統合で、起動/TCP根因修復やK305全体完了とは別。統合後Checkは起動成功・UI検査後の旧TCP guardで失敗し、原因は未解明。Trial成功と分けて保持する。",
+      "evidence": [
+        {
+          "label": "PR #101",
+          "url": "https://github.com/g-kari/devsecops-console/pull/101"
+        },
+        {
+          "label": "統合後Check初回のTCP guard失敗",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43629954371/attempts/1"
+        }
+      ]
     }
   ],
   "updates": [
+    {
+      "at": "2026-11-14T19:16:16Z",
+      "type": "検証",
+      "text": "main c191deb9の統合後Trial attempt 1は全10job/6 ready成功。6実ZIP全件の実bytes/digest/CRC/checksum、manifest source/tree/run/attemptと全inner archive bytesを検証。4 native smokeと2 cross-compileのみの対象を区別する。配布UI/runtime・実機・署名公証・実loginは未検証、正式v0.5.0不変。別runのCheck失敗は保持し、全CI成功や起動/TCP/Intel timeout根因修復とはしない。",
+      "url": "https://github.com/g-kari/devsecops-console/actions/runs/43629954368/attempts/1"
+    },
+    {
+      "at": "2026-11-14T19:09:33Z",
+      "type": "起動/監査観測",
+      "text": "main c191deb9の統合後Check attempt 1はgo-checkの旧unfinished TCP guardで失敗、他5job成功。起動timeoutはなくgetVersion応答5933ms、32ケース/10フロー/29 PNG後のfinally監査・既存最終assertでexit1。新startupはfull増分2307bytes。failure=nullはcatch時snapshot未取得の範囲で全体成功ではなく、automated_status=failedと旧違反を保持。同run source44の2監査キー/2record/省略0・TCP wrapper3028bytes、BEGIN346/347・context344/346/347/352・endpoint各total1/allowlisted1を確認。SOCKET_ALIVE ENDはTCP ENDではなく、物理2接続や別run同IDの同接続性は示さない。起動timeoutがなくてもguard症状が出る一例だが、原因の独立性、通信成立・payload・漏洩・取消の原因/結果は未解明。raw NetLog未保持でglobal zero-egress保証はしない。追加retry0、根因修復ではない。",
+      "url": "https://github.com/g-kari/devsecops-console/actions/runs/43629954371/attempts/1"
+    },
+    {
+      "at": "2026-11-14T19:03:05Z",
+      "type": "起動診断統合",
+      "text": "PR #101でdriver/helper/testの3fileに上限付きstartup診断を追加してmain c191deb9へ統合。write local処理・受信・応答・catch・cleanup・exit/closeを分離し、新情報だけ4KiB/全checks256KiB内へ縮退。旧guard/allowlist/UDP/flags/timeout/retry・Go/workflowは不変。起動/TCP根因修復ではない。",
+      "url": "https://github.com/g-kari/devsecops-console/pull/101"
+    },
+    {
+      "at": "2026-11-14T18:55:39Z",
+      "type": "検証",
+      "text": "PR #101初回Trialは4 native/build job成功。PRイベントではmain-push限定readyは対象外で1 logical job skip。統合後の6 readyや新たな6配布ZIP確認とは分ける。",
+      "url": "https://github.com/g-kari/devsecops-console/actions/runs/43627602734/attempts/1"
+    },
+    {
+      "at": "2026-11-14T18:43:32Z",
+      "type": "起動診断観測",
+      "text": "PR #101初回Check全6job成功。実startupはfull/増分2296bytes、getVersion write51bytesのlocal処理5ms/first byte847ms/応答848msを収集。Node v24.22.2、Chrome157.0.8103.50のCDP/NetLog version一致、NetLog revision invalid/null。32ケース/10フロー/29 PNG、TCPキー0/record0/省略0を確認。旧PR100起動失敗のChrome版は不明で、正常run収集を失敗再現・根因修復とは扱わない。",
+      "url": "https://github.com/g-kari/devsecops-console/actions/runs/43627602737/attempts/1"
+    },
+    {
+      "at": "2026-11-14T17:36:20Z",
+      "type": "公開同期",
+      "text": "PR #100の正本・raw・候補全文一致、既存公開Siteの33工程、K305/K309詳細、実測ガント、検索/filter/reset・手動更新を確認済み。公開表示は16:15:08観測/15:51:18診断成果の歴史snapshot。Site再配備と新モバイルQAはしていない。",
+      "url": "https://github.com/g-kari/devsecops-console/pull/100"
+    },
+    {
+      "at": "2026-11-14T17:23:51Z",
+      "type": "検証",
+      "text": "PR #100統合後Trial全10job/6 readyはattempt 1成功。同一SHAの6実ZIPでCRC/digest/checksum/source-tree-run-attempt/manifestと全inner bytesを確認。4 native smokeと2 cross-compileを分け、配布UI/runtime・実機・署名公証・実loginは未検証、正式v0.5.0不変。Intel timeout根因修復ではない。",
+      "url": "https://github.com/g-kari/devsecops-console/actions/runs/43619220804/attempts/1"
+    },
+    {
+      "at": "2026-11-14T17:12:15Z",
+      "type": "検証",
+      "text": "PR #100統合後Check全6jobはattempt 1成功。32ケース/10フロー/29 PNG、未完TCPキー0/record0/省略0、旧違反0、store不変・外部action0・残PID0を当時の実artifactで確認。初回失敗の取消や根因修復とは別。",
+      "url": "https://github.com/g-kari/devsecops-console/actions/runs/43619220847/attempts/1"
+    },
+    {
+      "at": "2026-11-14T17:05:50Z",
+      "type": "資料統合",
+      "text": "PR #100で16:15:08観測/15:51:18診断成果の公開JSONをmain 51970d05へ統合。初回Checkのstartup/TCP失敗とTrialのIntel package timeoutを履歴として保持した。資料の配信commitと実装成果時刻は別。",
+      "url": "https://github.com/g-kari/devsecops-console/pull/100"
+    },
     {
       "at": "2026-11-14T16:08:49Z",
       "type": "検証",
