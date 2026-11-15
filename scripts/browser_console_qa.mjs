@@ -1,6 +1,7 @@
 // Opt-in normal-runner QA only. Node 22/24 builtins; no package or browser install.
 // Screenshots are actual CDP responses. Visual review remains a separate gate.
 import assert from 'node:assert/strict';
+import { createStreamFailureControl, STREAM_FAILURE_TEXT } from './browser_stream_failure.mjs';
 import { classifyFailedUDPConnects, validNetLogSourceID, NET_SOURCE_NAMES } from './browser_udp_audit.mjs';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -1267,6 +1268,7 @@ async function selfTest() {
   assert.throws(()=>pngSize(Buffer.alloc(24)));
   await (await import('./test_browser_startup_diagnostics.mjs')).testStartupDiagnostics({CDP, fitTCPDiagnosticBudget});
   await (await import('./test_browser_tcp_lifecycle_diagnostics.mjs')).testTCPLifecycleDiagnostics({netlogAudit,fitTCPDiagnosticBudget});
+  await import('./test_browser_stream_failure.mjs');
   console.log('PASS stdlib-only framing/error/origin/DNS-policy/transport-audit/readiness-negative/bounded-parent-cleanup/TERM-zero-exit-rejection/UDP-source-chain-phase-result-lifetime-sanitization-and-bounds/contrast/PNG-header/argument self-tests; no Chrome, application, screenshot or network used');
 }
 async function main() {
@@ -1296,6 +1298,7 @@ async function main() {
   };
   let chromeStartedAt, startupDiagnostics;
   let imageBytes=0, chrome, client, proxy, watchdog, chromeStderrBytes=0, fatal, exitCode, exitSignal, spawnError, proxyOrigin;
+  const streamFailure=createStreamFailureControl({getClient:()=>client, exitState:process, writeReceipt:line=>console.error(line.slice(0,-1))});
   let chromeParentCleanup= {
     parent_exit_observed:false, descendants:'unknown; see stability.json'
   };
@@ -1572,12 +1575,14 @@ async function main() {
       res.end('offline synthetic QA');
     });
     proxy.on('connect', (req, socket)=> {
+      if(!streamFailure.registerConnect(socket))return;
       checks.blocked_browser_activity.proxy_connects++;
       if(checks.blocked_browser_activity.attempts.length<16)checks.blocked_browser_activity.attempts.push(networkLabel('https://'+req.url));
-      socket.end('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
+      streamFailure.endConnect(socket, 'HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
     });
     proxy.listen(0, '127.0.0.1');
     await once(proxy, 'listening');
+    streamFailure.checkpoint();
     proxyOrigin=`http://127.0.0.1:${proxy.address().port}`;
     const policy=networkPolicy(origins, proxyOrigin);
     const flags=['--headless=new', '--remote-debugging-pipe', `--user-data-dir=${profile}`, '--disable-background-networking', '--disable-component-update', '--disable-sync', '--disable-default-apps', '--disable-extensions', '--disable-breakpad', '--disable-quic', '--no-first-run', '--no-default-browser-check', `--proxy-server=http://127.0.0.1:${proxy.address().port}`, `--proxy-bypass-list=${policy.bypass}`, `--host-resolver-rules=${policy.resolver}`, `--log-net-log=${netlog}`, '--net-log-capture-mode=Default', 'about:blank'];
@@ -1589,6 +1594,7 @@ async function main() {
     chrome=spawn(args['--chrome'], flags, {
       stdio:['ignore', 'ignore', 'pipe', 'pipe', 'pipe'], env:chromeEnv
     });
+    streamFailure.registerStderr(chrome.stderr);
     chrome.stderr.on('data', b=> {
       chromeStderrBytes+=b.length;
       startupObserve(startupDiagnostics, 'stderr', b);
@@ -1777,9 +1783,11 @@ async function main() {
         const start=(requests.get(session)??[]).length;
         await navigate(session, new URL(info.path, fixture.origins[info.origin]).href, info.status);
         await inspect(session, info, viewport, start);
+        streamFailure.checkpoint();
         assert.equal(checks.violations.length, 0, 'offline/browser guard violation');
       }
       await flows(session, viewport);
+      streamFailure.checkpoint();
       await fetchDecisions.drain();
       await client.call('Target.closeTarget', {
         targetId
@@ -1794,12 +1802,13 @@ async function main() {
       chrome_stderr_bytes:chromeStderrBytes
     };
     startupObserve(startupDiagnostics, 'failure', client);
-    checks.error=scrubNetworkText(e.stack??e).slice(0, 16384);
+    checks.error=streamFailure.isCancellation(e)?STREAM_FAILURE_TEXT:scrubNetworkText(e.stack??e).slice(0, 16384);
     // Preserve decisive bounded evidence in the job log even after artifacts expire.
     console.error('FAIL browser navigation diagnostics',JSON.stringify({
       error:checks.error,startup:checks.startup,events:checks.navigation_events,violations:checks.violations
     }));
   } finally {
+    streamFailure.cleanup();
     clearTimeout(watchdog);
     startupObserve(startupDiagnostics, 'cleanup', chrome, spawnError);
     try {
@@ -1842,7 +1851,11 @@ async function main() {
     checks.loopback_proxy_closed=!!proxy;
     if(chrome&&!spawnError&&exitCode!==0)violation(`Chrome exited abnormally: ${exitCode}/${exitSignal}`);
     checks.request_count=allRequests.length;
-    checks.automated_status=!fatal&&checks.violations.length===0?'passed':'failed';
+    streamFailure.finalizing();
+    if(streamFailure.failed&&!fatal&&checks.error===undefined)checks.error=STREAM_FAILURE_TEXT;
+    // Freeze one status for both artifacts. Later failures still force nonzero;
+    // they do not rewrite this snapshot or consume diagnostic receipts again.
+    checks.automated_status=!fatal&&!streamFailure.failed&&checks.violations.length===0?'passed':'failed';
     checks.visual_review='pending';
     fitTCPDiagnosticBudget(checks);
     // Legacy TCP projection and JSON-size failure take precedence over startup detail.
@@ -1876,7 +1889,9 @@ async function main() {
   assert.equal(manifest.images.length, 29, 'incomplete runtime screenshot matrix');
   assert.equal(checks.violations.length, 0, `offline guard failed: ${checks.violations.join('; ')}`);
   assert.equal(checks.automated_status, 'passed');
+  streamFailure.checkpoint();
   console.log(`PASS automated real Chrome checks; ${manifest.images.length} runtime PNGs saved. Download/materialization/visual review remain pending.`);
+  streamFailure.emitted();
 }
 if(process.argv.slice(2).length===1&&process.argv[2]==='--self-test')await selfTest();
 else await main();
