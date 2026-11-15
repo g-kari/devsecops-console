@@ -153,19 +153,68 @@ function projectSnapshot(value,schema=snapshotSchema) {
   }
   throw new Error('invalid diagnostic scalar');
 }
-export function fitStartupDiagnosticBudget(checks,observer,client,serialize=value=>JSON.stringify(value,null,2)+'\n') {
+// The fifth argument borrows the existing arena view. Only global words0/1
+// are the receipt; words2/3 track fresh-call eligibility. No input/string copy.
+const RECEIPT=2048,receiptJSONStringify=JSON.stringify;
+const RECEIPT_ROOT_KEYS=Object.freeze(['synthetic','automated_status','visual_review','cases','flows','violations','fonts','navigation_events','fetch_decision_cancellations','blocked_browser_activity','browser','startup','network_audit','node','network_guard','network_policy','sandbox_disable_flags','configured_deadlines_ms','chrome_stderr_summary','chrome_exit_code','chrome_exit_signal','chrome_parent_cleanup','chrome_descendant_cleanup','loopback_proxy_closed','request_count','error']);
+// One pending owned arena, never a per-event or accumulating registry. The
+// ownership reference is consumed by the first old-fitter call. A second arena
+// supersedes an unconsumed one, whose later receipt is then unsupported.
+let pendingReceiptOwner=null;
+export function createStartupReceiptArena(){
+  const arena=new ArrayBuffer(12736),words=new Uint32Array(arena,0,2160),bytes=new Uint8Array(arena,8640,4096);
+  words[RECEIPT+3]=1;pendingReceiptOwner=words;return {words,bytes};
+}
+function receiptView(value){
+  try {
+    if(!ArrayBuffer.isView(value)||Object.getPrototypeOf(value)!==Uint32Array.prototype)return false;
+    const proto=Object.getPrototypeOf(Uint32Array.prototype),get=name=>Object.getOwnPropertyDescriptor(proto,name).get.call(value);
+    return get('byteLength')===8640&&get('byteOffset')===0&&Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,'byteLength').get.call(get('buffer'))===12736;
+  }catch{return false;}
+}
+function invalidateReceipt(value){try{if(receiptView(value)){value[RECEIPT+1]=0;value[RECEIPT+3]=0;}}catch{ /* No old-path effect. */ }}
+function initializeReceipt(value,checks,defaultSerializer){
+  try {
+    if(!receiptView(value))return false;
+    value[RECEIPT+1]=0;value[RECEIPT]=0;value[RECEIPT+2]++;
+    const owned=value===pendingReceiptOwner;if(owned)pendingReceiptOwner=null;
+    if(!owned){invalidateReceipt(value);return false;}
+    if(value[RECEIPT+2]!==1||value[RECEIPT+3]!==1||!defaultSerializer||JSON.stringify!==receiptJSONStringify){invalidateReceipt(value);return false;}
+    const p=Object.getPrototypeOf(checks),marker=Object.getOwnPropertyDescriptor(checks,'synthetic');
+    if((p!==Object.prototype&&p!==null)||!marker||!Object.hasOwn(marker,'value')||marker.value!==true||
+      Object.getOwnPropertyDescriptor(checks,'startup_diagnostics')||Object.getOwnPropertyDescriptor(checks,'toJSON')||
+      Object.getOwnPropertyDescriptor(Object.prototype,'toJSON')){invalidateReceipt(value);return false;}
+    // Ownership is the current production JSON/plain checks graph. These known
+    // root accessor callers are unsupported. Arbitrary Proxy/nested mutation
+    // cannot be proved absent without a copy; it is outside that ownership.
+    for(const key of RECEIPT_ROOT_KEYS){const d=Object.getOwnPropertyDescriptor(checks,key);if(d&&!Object.hasOwn(d,'value')){invalidateReceipt(value);return false;}}
+    return true;
+  }catch{invalidateReceipt(value);return false;}
+}
+function commitReceipt(value,bytes){
+  try {
+    value[RECEIPT+1]=0;value[RECEIPT]=Math.min(bytes,JSON_LIMIT+1);value[RECEIPT+1]=bytes>JSON_LIMIT?2:1;
+  }catch{invalidateReceipt(value);}
+}
+export function fitStartupDiagnosticBudget(checks,observer,client,serialize=value=>JSON.stringify(value,null,2)+'\n',receipt) {
   // Caller first runs the unchanged TCP budget on checks WITHOUT this field.
   // Startup detail may never displace legacy fields or rescue legacy oversize.
-  let baseline;
-  try {baseline=Buffer.byteLength(serialize(checks));}catch{return;}
-  if(baseline>JSON_LIMIT)return;
-  const attempt=value=>{
-    checks.startup_diagnostics=value;
-    try {const bytes=Buffer.byteLength(serialize(checks));return bytes<=JSON_LIMIT&&bytes-baseline<=DETAIL_LIMIT;}
-    finally {delete checks.startup_diagnostics;}
-  };
-  let full;
-  try {full=projectSnapshot(startupObserve(observer,'snapshot',client));}catch{ /* Defensive outer isolation. */ }
-  if(full)try{if(attempt(full)){checks.startup_diagnostics=full;return;}}catch{ /* Fall back only new diagnostics. */ }
-  try{const value=tiny();if(attempt(value))checks.startup_diagnostics=value;}catch{delete checks.startup_diagnostics;}
+  const eligible=initializeReceipt(receipt,checks,arguments[3]===undefined);
+  let finished=false;
+  try {
+    let baseline,attemptBytes;
+    try {baseline=Buffer.byteLength(serialize(checks));}catch{return;}
+    if(baseline>JSON_LIMIT){if(eligible)commitReceipt(receipt,baseline);finished=true;return;}
+    const attempt=value=>{
+      checks.startup_diagnostics=value;
+      try {const bytes=Buffer.byteLength(serialize(checks));attemptBytes=bytes;return bytes<=JSON_LIMIT&&bytes-baseline<=DETAIL_LIMIT;}
+      finally {delete checks.startup_diagnostics;}
+    };
+    let full;
+    try {full=projectSnapshot(startupObserve(observer,'snapshot',client));}catch{ /* Defensive outer isolation. */ }
+    if(full)try{if(attempt(full)){checks.startup_diagnostics=full;if(eligible)commitReceipt(receipt,attemptBytes);finished=true;return;}}catch{ /* Fall back only new diagnostics. */ }
+    let adoptedBytes=baseline;
+    try{const value=tiny();if(attempt(value)){checks.startup_diagnostics=value;adoptedBytes=attemptBytes;}}catch{delete checks.startup_diagnostics;}
+    if(eligible)commitReceipt(receipt,adoptedBytes);finished=true;
+  } finally {if(!finished)invalidateReceipt(receipt);}
 }

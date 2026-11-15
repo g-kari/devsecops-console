@@ -11,6 +11,9 @@ import path from 'node:path';
 import { isIP } from 'node:net';
 import { PassThrough } from 'node:stream';
 import { createStartupDiagnostics, startupObserve, fitStartupDiagnosticBudget } from './browser_startup_diagnostics.mjs';
+import { createTCPLifecycleDiagnostics } from './browser_tcp_lifecycle_diagnostics.mjs';
+// Exactly three borrowed input roots, no collector work inside the audit.
+let lifecycleLog=null,lifecycleAttempts=null,lifecycleNames=null,lifecycleCapture=false;
 const MAX_PACKET=16*1024*1024, MAX_PNG=512*1024, IMAGE_BUDGET=7*1024*1024;
 const sha256=b=>createHash('sha256').update(b).digest('hex');
 const delay=ms=>new Promise(resolve=>setTimeout(resolve, ms));
@@ -602,6 +605,7 @@ function netlogAudit(log, origins, endpoints) {
   report.udp_diagnostics=udpDetails;
   for(const {reason}of report.udp_diagnostics.failure_reasons)bad(`UDP diagnostic incomplete/prohibited: ${reason}`);
   report.tcp_diagnostics=tcpNetlogDetails(log,attempts,endpoints,names);
+  if(lifecycleCapture)try{lifecycleLog=log;lifecycleAttempts=attempts;lifecycleNames=names;}catch{ /* Only the new observation. */ }
   return report;
 }
 // This only observes/signals the Chrome parent. Linux Go supervision separately
@@ -1262,6 +1266,7 @@ async function selfTest() {
   });
   assert.throws(()=>pngSize(Buffer.alloc(24)));
   await (await import('./test_browser_startup_diagnostics.mjs')).testStartupDiagnostics({CDP, fitTCPDiagnosticBudget});
+  await (await import('./test_browser_tcp_lifecycle_diagnostics.mjs')).testTCPLifecycleDiagnostics({netlogAudit,fitTCPDiagnosticBudget});
   console.log('PASS stdlib-only framing/error/origin/DNS-policy/transport-audit/readiness-negative/bounded-parent-cleanup/TERM-zero-exit-rejection/UDP-source-chain-phase-result-lifetime-sanitization-and-bounds/contrast/PNG-header/argument self-tests; no Chrome, application, screenshot or network used');
 }
 async function main() {
@@ -1797,6 +1802,7 @@ async function main() {
   } finally {
     clearTimeout(watchdog);
     startupObserve(startupDiagnostics, 'cleanup', chrome, spawnError);
+    try {
     if(chrome&&!spawnError) {
       try { await fetchDecisions.drain(); } catch(e) { violation(e.message); }
       chromeParentCleanup=await stopChromeParent(chrome, async()=> {
@@ -1814,7 +1820,9 @@ async function main() {
         assert((await stat(netlog)).size<=16*1024*1024, 'NetLog file exceeds audit bound');
         const log=JSON.parse(await readFile(netlog, 'utf8'));
         startupObserve(startupDiagnostics, 'netlog', log);
+        lifecycleCapture=true;
         const report=netlogAudit(log, origins, networkPolicy(origins, proxyOrigin).endpoints);
+        lifecycleCapture=false;
         checks.network_audit=report;
         for(const problem of report.violations)violation(problem);
       }catch(e) {
@@ -1838,7 +1846,11 @@ async function main() {
     checks.visual_review='pending';
     fitTCPDiagnosticBudget(checks);
     // Legacy TCP projection and JSON-size failure take precedence over startup detail.
-    fitStartupDiagnosticBudget(checks, startupDiagnostics, client);
+    let lifecycleDiagnostics=null;
+    try{lifecycleDiagnostics=createTCPLifecycleDiagnostics();}catch{ /* Omit only new evidence. */ }
+    fitStartupDiagnosticBudget(checks, startupDiagnostics, client, undefined, lifecycleDiagnostics?.receipt);
+    try{lifecycleDiagnostics?.attach(checks,lifecycleLog,lifecycleAttempts,lifecycleNames);}catch{ /* Omit only new evidence. */ }
+    } finally {lifecycleCapture=false;lifecycleLog=null;lifecycleAttempts=null;lifecycleNames=null;}
     await writeJSON('checks.json', checks);
     manifest.automated_status=checks.automated_status;
     manifest.configured_deadlines_ms=checks.configured_deadlines_ms?? {};
