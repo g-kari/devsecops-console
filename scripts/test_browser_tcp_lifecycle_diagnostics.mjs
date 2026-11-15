@@ -113,5 +113,6 @@ export async function testTCPLifecycleDiagnostics({netlogAudit,fitTCPDiagnosticB
   group('old audit report and pending guard remain unchanged',()=>{
     if(!netlogAudit)return;const f=lifecycleFixture(),origins=new Set(['http://127.0.0.1:123']),endpoints=new Set(['127.0.0.1:123']);const report=netlogAudit(f.log,origins,endpoints);assert(report.violations.includes('unfinished TCP attempt; transport outcome unknown'));const before=text(report);const c={synthetic:true,browser:{revision},network_audit:report};fitTCPDiagnosticBudget(c);const state=createTCPLifecycleDiagnostics();fitStartupDiagnosticBudget(c,undefined,undefined,undefined,state.receipt);state.attach(c,f.log,f.pending,f.names);assert.equal(text(report),before);
   });
+  await (await import('./test_browser_pool_owner_diagnostics.mjs')).testPoolOwnerDiagnostics({netlogAudit});
   console.log(JSON.stringify({tcp_lifecycle_diagnostics:'passed',groups:cases,scope:'pure-data/in-memory only; no Chrome/network/Go/OS pipe/CI',backing_bytes:12736,controlled_backing_plus_string_payload:20928,total_v8_heap_bound:false}));
 }
