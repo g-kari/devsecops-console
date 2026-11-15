@@ -100,14 +100,76 @@ function allowedRevision(checks){
   const value=own(own(checks,'browser'),'revision');
   return value==='049750111b1e5c11565c792b2aeed5541f332bad'||value==='@049750111b1e5c11565c792b2aeed5541f332bad'||value==='4b3d0dabb8250b6f152d2d85d79e7706e309d087'||value==='@4b3d0dabb8250b6f152d2d85d79e7706e309d087';
 }
+// Optional owner summary uses only previously unused words: C+34/35 and
+// header+56/58/60. C+35: 0 disabled, 1 registry unavailable, 2 valid.
+// No optional exception can escape into the old collector catch.
+const POOL_CREATED='SOCKET_POOL_CONNECT_JOB_CREATED';
+function poolRegistry(w,checks,log,names){
+  w[C+34]=0;w[C+35]=0;
+  try {
+    const revision=own(own(checks,'browser'),'revision');
+    if(revision!=='049750111b1e5c11565c792b2aeed5541f332bad'&&revision!=='@049750111b1e5c11565c792b2aeed5541f332bad')return;
+    w[C+35]=1;
+    const value=own(own(own(log,'constants'),'logEventTypes'),POOL_CREATED);
+    if(!code(value)||Map.prototype.get.call(names,value)!==POOL_CREATED)return;
+    for(let i=0;i<18;i++)if(w[C+i]===value)return;
+    w[C+34]=value;w[C+35]=2;
+  }catch{w[C+35]=0;}
+}
+function poolObserve(w,h,event,index){
+  if(w[C+35]!==2)return;
+  try {
+    const type=own(event,'type');if(!code(type)||type!==w[C+34])return;
+    w[h+56]=Math.min(2,w[h+56]+1);
+    if(phase(w,event)!==0){w[h+58]=7;return;}
+    if(w[h+56]!==1||w[h+58]===7)return;
+    w[h+60]=index;
+    const backup=own(paramsOf(event),'backup_job');
+    w[h+58]=backup===false?2:backup===true?3:backup===ABSENT?4:5;
+  }catch{w[C+35]=0;}
+}
+function poolState(w,h){
+  if(w[C+35]!==2)return 0;
+  if(w[h+58]===7)return 7;
+  if(w[h+56]>1)return 6;
+  // The outer CONNECT_JOB begins before CREATED; the inner TCP BEGIN may
+  // follow it. Never require CREATED to follow the inner BEGIN.
+  if(w[h+32]!==1)return 0;
+  if(w[h+56]===0)return 1;
+  if(w[h+60]<=w[h+34]||w[h+33]===1&&w[h+60]>=w[h+35])return 7;
+  return w[h+58];
+}
+// Runs only AFTER the legacy value is parsed, validated and adopted. The only
+// new heap container is the schema's fixed two-integer output tuple. No extra
+// collector storage, baseline serialization, decode, parse or prefix emission.
+function addPoolOwner(w,value,length,cap){
+  if(w[C+35]===0)return;
+  try {
+    let slot=-1;
+    for(let j=0;j<value.shown_sources;j++)if(w[j*64+16]===0&&w[j*64+18]===6){slot=j;break;}
+    if(slot<0)return;
+    const delta=slot<10?44:45;
+    if(length+33+delta>cap)return;
+    const state=poolState(w,slot*64);
+    Object.defineProperty(value,'pool_owner',{value:[slot,state],enumerable:true,configurable:true});
+    value.schema_version=2;
+    if(!validate(value))throw 0;
+  }catch{
+    // value is our own JSON.parse result; these are ordinary configurable
+    // own properties, not caller objects. Do not call lifecycle cleanup.
+    delete value.pool_owner;value.schema_version=1;
+  }
+}
 function clearController(w,h,status,ident){w[h+16]=status;w[h+20]=ident;w[h+17]=0;w[h+18]=0;w[h+24]=NIL;w[h+29]=NIL;w[h+30]=0;w[h+31]=0;}
 function collect(w,checks,log,pending,names){
+  w[C+34]=0;w[C+35]=0;
   w[G+4]=0;w[G+5]=0;w[G+6]=NIL;w[G+7]=NIL;w[G+8]=0;
   if(Object.getPrototypeOf(pending)!==Map.prototype)throw 0;
   const size=Reflect.getOwnPropertyDescriptor(Map.prototype,'size').get.call(pending);
   if(!integer(size,0,100000))throw 0;w[G+6]=size;w[G+7]=size;
   if(!allowedRevision(checks)){w[G+4]|=2;w[G+8]=2;return;}
   if(!registry(w,log,names)){w[G+4]|=4;w[G+8]=2;return;}
+  poolRegistry(w,checks,log,names);
   const events=own(log,'events'),length=arrayLength(events);if(size>length)throw 0;
   const anchor=length&&tick(w,own(at(events,0),'time'),S+3);w[G+9]=anchor?1:0;
   const find=value=>{for(let j=0;j<w[G+5];j++)if(signed(w[j*64])===value)return j;return -1;};
@@ -167,8 +229,8 @@ function collect(w,checks,log,pending,names){
   }
   // C: ID FIRST. No type prefilter can hide missing/malformed/conflicting rows.
   for(let i=0;i<length;i++){
-    const source=sameSource(at(events,i)),value=own(source,'id');
-    for(let j=0;j<w[G+5];j++){const h=j*64;if(w[h+16]===0&&signed(w[h+17])===value){w[h+59]++;accumulate(w,h,source,true);}}
+    const event=at(events,i),source=sameSource(event),value=own(source,'id');
+    for(let j=0;j<w[G+5];j++){const h=j*64;if(w[h+16]===0&&signed(w[h+17])===value){w[h+59]++;accumulate(w,h,source,true);poolObserve(w,h,event,i);}}
   }
   for(let j=0;j<w[G+5];j++){
     const h=j*64;if(w[h+16]!==0)continue;
@@ -236,8 +298,11 @@ function emit(w,b,shown,status,flags,cap){
   put('\n  }');return pos;
 }
 function validate(value){
-  if(!plain(value)||Object.keys(value).join('|')!==ROOT_KEYS.join('|'))return false;
-  if(value.schema_version!==1||!integer(value.status,0,2)||!integer(value.flags,0,65535))return false;
+  if(!plain(value))return false;
+  const version=own(value,'schema_version');
+  if(version!==1&&version!==2)return false;
+  if(Object.keys(value).join('|')!==ROOT_KEYS.join('|')+(version===2?'|pool_owner':''))return false;
+  if(!integer(value.status,0,2)||!integer(value.flags,0,65535))return false;
   const pending=value.pending_keys,unselected=value.unselected_keys,selected=value.selected_sources,shown=value.shown_sources,trim=value.trimmed_sources,keys=value.trimmed_keys;
   if(!(pending===null&&value.status===2||integer(pending,0,100000))||!(unselected===null&&value.status===2||integer(unselected,0,100000)))return false;
   if(!integer(selected,0,16)||!integer(shown,0,16)||!integer(trim,0,16)||!integer(keys,0,32)||shown!==value.records.length||trim!==selected-shown||trim>keys||keys>2*trim)return false;
@@ -255,6 +320,14 @@ function validate(value){
     else if(r[16]!==null&&(!Array.isArray(r[16])||r[16].length!==3||!r[16].every(x=>integer(x,0,100000))))return false;
     if(!Array.isArray(r[19])||r[19].length>8)return false;
     let prior=-1;for(const e of r[19]){if(!Array.isArray(e)||e.length!==8||!integer(e[0],0,99999)||e[0]<=prior||!integer(e[1],1,14)||!integer(e[2],0,3)||!(e[3]===null||integer(e[3],0,300000))||!integer(e[4],0,7)||!integer(e[5],0,4)||!integer(e[6],0,13)||!(e[7]===null||typeof e[7]==='boolean'))return false;prior=e[0];}
+  }
+  if(version===2){
+    const owner=own(value,'pool_owner');
+    if(arrayLength(owner)!==2||Reflect.ownKeys(owner).length!==3)return false;
+    const slot=at(owner,0),state=at(owner,1);
+    if(!integer(slot,0,shown-1)||!integer(state,0,7))return false;
+    let first=-1;for(let j=0;j<shown;j++)if(value.records[j][10]===0&&value.records[j][12]===6){first=j;break;}
+    if(slot!==first)return false;
   }
   return pending===null||count===pending;
 }
@@ -292,10 +365,14 @@ export function createTCPLifecycleDiagnostics(){
           const d=Object.getOwnPropertyDescriptor(checks,KEY);created=!!d&&Object.hasOwn(d,'value')&&d.value===value;
           if(!created)return;
           // Check only bounded trusted adopted value, never serialize baseline.
-          if(!validate(value))cleanup(checks);
+          if(!validate(value)){cleanup(checks);return;}
+          addPoolOwner(words,value,length,cap);
         }catch{try{cleanup(checks);}catch{ /* New field only. */ }}
       },
       cleanup
     };
   }catch{return null;}
 }
+
+// Closed internal consumer for evidence readers and synthetic schema tests.
+export function validateTCPLifecycleDiagnostics(value){try{return validate(value);}catch{return false;}}
