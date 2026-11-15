@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "project": "DevSecOps Console",
-  "checkedAt": "2026-11-15T08:13:47Z",
+  "checkedAt": "2026-11-15T12:56:08Z",
   "publishedSnapshotAt": "2026-11-13T20:28:00Z",
-  "lastSubstantiveProgressAt": "2026-11-15T08:04:39Z",
-  "lastSubstantiveProgressLabel": "PR #107の限定pool owner補助診断を統合。事後Check・Trialは初回成功、6実ZIPを独立照合。原原因未解明でK305根因調査は次担当未割当の保留。",
+  "lastSubstantiveProgressAt": "2026-11-15T12:54:06.713Z",
+  "lastSubstantiveProgressLabel": "K275のcurrent-status受入条件12項目、公開provider契約対応、7状態・18遷移・37否定シナリオのoffline設計を受入れ。設計の独立レビューは終了。実装・動的試験の合格ではなく、SessionSnapshot変換・runtimeはNO-GO。",
   "lastCodeMergeAt": "2026-11-15T07:47:42Z",
-  "mainSha": "fcbe71e0d31b2f25f4e054f31103120d7d3e1742",
+  "mainSha": "648c2852f30e0de8f8c3a8ceb56eb7238d6aa8d4",
   "repository": "https://github.com/g-kari/devsecops-console",
   "scopeNote": "コード統合、各変更の検証、正式版収録、本番稼働を分ける。main SHA・PR一覧・CIはcheckedAt時点の観測値。成果時刻と公開JSONの配信commitは別。資料更新の統合・配信確認は対応するPRと作業記録で追跡する。 掲載PRはcheckedAt時点の歴史的観測であり、配信後の現在一覧を自動追跡した結果ではない。",
-  "currentFocus": "限定pool owner診断の担当工程は終了。原原因を調べる次の範囲・担当が未割当のため根因調査は保留（Held）で、本人の承認待ちや既存担当の終了待ちではない。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。 実Chrome例外の再現、画像の目視、global zero-egress、通常cleanupの生存性・終端stream収束・遅着成果物は未解決。K275実ログイン/IdP/session/runtimeは未実装、K310は設計限定。PR一覧・CI・担当状態は照合時点の観測snapshotで、掲載後の現在状態を自動調査したものではない。",
+  "currentFocus": "K275の限定offline設計工程は終了し、次の実装工程は未割当。TTL・clock・source観測保証・永続fence・作用先等の未確定条件を残し、実装・SessionSnapshot変換・runtimeはNO-GO。 限定pool owner診断の担当工程は終了。原原因を調べる次の範囲・担当が未割当のため根因調査は保留（Held）で、本人の承認待ちや既存担当の終了待ちではない。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。 実Chrome例外の再現、画像の目視、global zero-egress、通常cleanupの生存性・終端stream収束・遅着成果物は未解決。K275実ログイン/IdP/session/runtimeは未実装、K310は設計限定。PR一覧・CI・担当状態は照合時点の観測snapshotで、掲載後の現在状態を自動調査したものではない。",
   "openPullRequests": [],
   "ci": {
     "status": "success",
-    "label": "PR #107で上限付きpool owner補助診断をmain fcbe71e0へ統合。独立レビューで旧3指摘を解消し、限定実装・統合・事後検証の担当工程は終了。原因を修復した変更ではない。 統合後Checkはattempt 1で全6job成功（07:53:25 UTC）。新13群・旧19群のテスト成功、32ケース/10フロー/29 PNGの実bytes・hash・寸法を独立検証。実browserはschema1/status0/pending0/records=[]で、pool owner・取消元・原ERR_ABORTEDの原因は捕捉していない。schema1/2 readerと負零を保持するparse契約・20ケースは受入済みだが、任意入力のJS/Python受理集合一致は主張しない。push lintは既存continue-on-errorで63 issuesが残り、CI成功はlint無警告を意味しない。 統合後Trialはattempt 1でnative/build 4jobとready 6jobが成功。6実配布ZIPのCRC・hash・manifest、候補tarとの全bytes一致と4配布用ファイルのGit blob一致を独立検証。最終ready完了08:04:38 UTC、run更新08:04:39 UTCを事後成果の時刻として記録し、成果物照合・担当終了の時刻とは分ける。nativeはLinux amd64・Mac amd64/arm64・Windows amd64、Linux/Windows arm64はcross-compileのみ。画像の目視、配布UI/runtime・実機・署名公証・実ログインは未検証。正式v0.5.0は不変で、Trial成果物を正式Release収録とはしない。 PR #106統合後Check 43678422746のattempt 1は旧未完TCP guardで失敗。非空lifecycle診断の上位CONNECT ENDにERR_ABORTED(-3)を観測したが、取消元・peer・child TCP結果・根因は不明。独立レビュー後、同一SHAの失敗jobのみ1回再実行しattempt 2のgo-checkは05:15:58 UTCに成功、他5jobは初回成功の再掲。再実行のschema1空診断は初回の観測を否定せず原因修復の証拠でもない。Trial 43678422724は初回全10job・6 ready成功（最終ready 05:04:54 UTC）、6実ZIPを検証済み。PR段階の初回Check起動timeoutとTrial Intel package 600.120秒timeout、それぞれの限定再実行も履歴として保持し、根因解消とはしない。 稼働中・待機中CIは08:09:09 UTCの照合で0。以後の状態を保証する表示ではない。",
-    "url": "https://github.com/g-kari/devsecops-console/actions/runs/43691533987",
-    "checkedAt": "2026-11-15T08:13:47Z"
+    "label": "PR #108の公開JSON更新をmain 648c2852へ09:20:51 UTCに統合。統合後Check 43698811819は初回6/6job成功（最終job 09:27:15 UTC、run更新09:27:16 UTC）。Trial 43698811792は初回10/10job・6 ready成功（最終ready 09:41:09 UTC、run更新09:41:10 UTC）。6実ZIPの独立受入れはCI完了とは別に確認済み。資料変更の検証であり、新しい認証実装・根因修復・正式版収録・Site表示確認ではない。正式v0.5.0は不変。 従来の履歴: PR #107で上限付きpool owner補助診断をmain fcbe71e0へ統合。独立レビューで旧3指摘を解消し、限定実装・統合・事後検証の担当工程は終了。原因を修復した変更ではない。 統合後Checkはattempt 1で全6job成功（07:53:25 UTC）。新13群・旧19群のテスト成功、32ケース/10フロー/29 PNGの実bytes・hash・寸法を独立検証。実browserはschema1/status0/pending0/records=[]で、pool owner・取消元・原ERR_ABORTEDの原因は捕捉していない。schema1/2 readerと負零を保持するparse契約・20ケースは受入済みだが、任意入力のJS/Python受理集合一致は主張しない。push lintは既存continue-on-errorで63 issuesが残り、CI成功はlint無警告を意味しない。 統合後Trialはattempt 1でnative/build 4jobとready 6jobが成功。6実配布ZIPのCRC・hash・manifest、候補tarとの全bytes一致と4配布用ファイルのGit blob一致を独立検証。最終ready完了08:04:38 UTC、run更新08:04:39 UTCを事後成果の時刻として記録し、成果物照合・担当終了の時刻とは分ける。nativeはLinux amd64・Mac amd64/arm64・Windows amd64、Linux/Windows arm64はcross-compileのみ。画像の目視、配布UI/runtime・実機・署名公証・実ログインは未検証。正式v0.5.0は不変で、Trial成果物を正式Release収録とはしない。 PR #106統合後Check 43678422746のattempt 1は旧未完TCP guardで失敗。非空lifecycle診断の上位CONNECT ENDにERR_ABORTED(-3)を観測したが、取消元・peer・child TCP結果・根因は不明。独立レビュー後、同一SHAの失敗jobのみ1回再実行しattempt 2のgo-checkは05:15:58 UTCに成功、他5jobは初回成功の再掲。再実行のschema1空診断は初回の観測を否定せず原因修復の証拠でもない。Trial 43678422724は初回全10job・6 ready成功（最終ready 05:04:54 UTC）、6実ZIPを検証済み。PR段階の初回Check起動timeoutとTrial Intel package 600.120秒timeout、それぞれの限定再実行も履歴として保持し、根因解消とはしない。 稼働中・待機中CIは08:09:09 UTCの照合で0。以後の状態を保証する表示ではない。",
+    "url": "https://github.com/g-kari/devsecops-console/actions/runs/43698811819",
+    "checkedAt": "2026-11-15T12:56:08Z"
   },
   "rows": [
     {
@@ -23,13 +23,13 @@
       "title": "Webログイン・役割制御",
       "phase": "共通認可",
       "status": "partial",
-      "owner": "offline verifierの担当工程は終了 / 次のruntime工程担当は未定",
-      "lastCheckedAt": "2026-11-14T10:15:38Z",
-      "lastProgressAt": "2026-11-14T09:50:08Z",
+      "owner": "限定offline設計工程は終了 / 次の実装工程は未割当",
+      "lastCheckedAt": "2026-11-15T12:56:08Z",
+      "lastProgressAt": "2026-11-15T12:54:06.713Z",
       "activityAt": null,
-      "latestAchievement": "PR #89のpure認可契約に続き、PR #95のoffline ID token verifierをmain 3a36efcbへ統合。統合後Checkはattempt 1、Trialはattempt 2で成功し、6 ready・同一SHAの6成果物を確認。PR時Checkはfont guard失敗後のattempt 2、Trialはattempt 1成功。Linux/Windows arm64はcross-compileのみ、他4対象はnative smoke。UI・実機・署名/公証は未検証。",
-      "waitReason": "部分完了はpure認可契約とoffline ID token verifierのみ。SessionSnapshot変換APIはなく、live/current-status・実ログイン・session・HTTP routeを含むruntime統合は未実装。限定担当工程は終了し、次工程担当は未定。",
-      "nextAction": "verified identityからSessionSnapshotへの変換・live/current-status・実protocol/IdP/session/HTTP境界を確認し、次工程担当と実装範囲を確定。offline verifierの合格を実ログインや本番稼働の完了と混同しない。",
+      "latestAchievement": "K275のcurrent-status受入条件12項目、公開provider契約対応、7状態・18遷移・37否定シナリオのoffline設計を受入れ。設計の独立レビューは終了。実装・動的試験の合格ではなく、SessionSnapshot変換・runtimeはNO-GO。 公開sourceではrefresh対象のclient所有権・失効・期限・ban・pairwise subjectの対応を確認。37否定シナリオは静的な設計で、実行test passではない。 従来の実装成果: PR #89のpure認可契約に続き、PR #95のoffline ID token verifierをmain 3a36efcbへ統合。統合後Checkはattempt 1、Trialはattempt 2で成功し、6 ready・同一SHAの6成果物を確認。PR時Checkはfont guard失敗後のattempt 2、Trialはattempt 1成功。Linux/Windows arm64はcross-compileのみ、他4対象はnative smoke。UI・実機・署名/公証は未検証。",
+      "waitReason": "実装済みはpure認可契約とoffline ID token verifierまで。current-statusのallow-producing受入ロジックは未実装。全7状態で認可出力はなく、active:trueだけでsessionを発行しない。TTL・clock・source観測保証・永続fence・作用先などは未確定で、SessionSnapshot変換・runtimeはNO-GO。実provider・client登録・稼働deploymentの適合、実ログイン/session/HTTP境界は未検証。設計工程は終了し、次の実装工程は未割当。",
+      "nextAction": "設計に残る取得要求とlocal世代の束縛、鮮度・clock・失効後再認証・競合順序点・永続fence・作用先の契約を確定し、次の限定実装範囲と検証計画を決める。positive gate未確定の間はallow-producing実装へ進まない。設計受入れを実ログインや本番稼働の完了と混同しない。",
       "dependencies": [],
       "evidence": [
         {
@@ -67,6 +67,10 @@
         {
           "label": "全体仕様",
           "url": "https://github.com/g-kari/devsecops-console/blob/main/docs/devsecops-roadmap.md"
+        },
+        {
+          "label": "current-status受入条件・provider契約・offline状態遷移の設計（実装未完）",
+          "url": "https://github.com/g-kari/devsecops-console/blob/main/docs/web-current-status-design.md"
         }
       ],
       "plannedStart": null,
@@ -949,10 +953,10 @@
       "phase": "公開資料",
       "status": "complete",
       "owner": "更新経路の限定工程完了 / 進捗同期は継続",
-      "lastCheckedAt": "2026-11-15T08:13:47Z",
-      "lastProgressAt": "2026-11-15T05:15:58Z",
+      "lastCheckedAt": "2026-11-15T12:56:08Z",
+      "lastProgressAt": "2026-11-15T09:41:10Z",
       "activityAt": null,
-      "latestAchievement": "PR #106の公開JSON更新を04:49:25 UTCに統合し、94,600 bytesの候補・正本・公開rawの全文一致を確認。配信内容のcheckedAt 03:47:13 UTCは歴史snapshotであり、配信commitや現在の観測時刻とは別。 PR #106統合後Check 43678422746のattempt 1は旧未完TCP guardで失敗。非空lifecycle診断の上位CONNECT ENDにERR_ABORTED(-3)を観測したが、取消元・peer・child TCP結果・根因は不明。独立レビュー後、同一SHAの失敗jobのみ1回再実行しattempt 2のgo-checkは05:15:58 UTCに成功、他5jobは初回成功の再掲。再実行のschema1空診断は初回の観測を否定せず原因修復の証拠でもない。Trial 43678422724は初回全10job・6 ready成功（最終ready 05:04:54 UTC）、6実ZIPを検証済み。PR段階の初回Check起動timeoutとTrial Intel package 600.120秒timeout、それぞれの限定再実行も履歴として保持し、根因解消とはしない。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。 従来の履歴: PR #104の公開JSON更新を01:22 UTCに統合し、候補・正本・公開rawの全文一致を確認。統合後Checkは初回Socket失敗後の限定再実行で01:45:27 UTCに成功。Trialは初回全10job・6 ready成功、6実ZIPを検証。既存Site実画面はこの更新では未確認。更新経路の限定完了と、更新ごとの表示確認を区別する。 従来の確認: PR #102をmain 949bceb5へ統合し、20:16:38 UTC観測snapshot/19:58:08 UTC診断成果の正本・raw・候補全文一致、既存Siteの33工程と詳細・実測ガント・取得を確認済み。公開経路・実成果物の検証完了を22:21 UTCに確認。PR #102初回Check起動失敗と統合後Check初回TCP guard失敗を保持し、統合後Check初回失敗とTrial初回全10job/6 ready・6実ZIP検証を区別する。通常のJSON同期にSite再配備は不要。新しいモバイルQAは実施していない。 後続の同一SHA Check限定再実行は22:32:33 UTCに成功。工程の成果時刻はこの後続CI検証の終端であり、最初の公開到達時刻ではない。",
+      "latestAchievement": "PR #108の公開JSON更新を09:20:51 UTCに統合。106,127 bytesの候補・main正本・公開rawの一致を確認した。配信JSONのcheckedAt 08:13:47 UTCは歴史snapshotで、現在の観測時刻ではない。 PR #108の公開JSON更新をmain 648c2852へ09:20:51 UTCに統合。統合後Check 43698811819は初回6/6job成功（最終job 09:27:15 UTC、run更新09:27:16 UTC）。Trial 43698811792は初回10/10job・6 ready成功（最終ready 09:41:09 UTC、run更新09:41:10 UTC）。6実ZIPの独立受入れはCI完了とは別に確認済み。資料変更の検証であり、新しい認証実装・根因修復・正式版収録・Site表示確認ではない。正式v0.5.0は不変。 従来の履歴: PR #106の公開JSON更新を04:49:25 UTCに統合し、94,600 bytesの候補・正本・公開rawの全文一致を確認。配信内容のcheckedAt 03:47:13 UTCは歴史snapshotであり、配信commitや現在の観測時刻とは別。 PR #106統合後Check 43678422746のattempt 1は旧未完TCP guardで失敗。非空lifecycle診断の上位CONNECT ENDにERR_ABORTED(-3)を観測したが、取消元・peer・child TCP結果・根因は不明。独立レビュー後、同一SHAの失敗jobのみ1回再実行しattempt 2のgo-checkは05:15:58 UTCに成功、他5jobは初回成功の再掲。再実行のschema1空診断は初回の観測を否定せず原因修復の証拠でもない。Trial 43678422724は初回全10job・6 ready成功（最終ready 05:04:54 UTC）、6実ZIPを検証済み。PR段階の初回Check起動timeoutとTrial Intel package 600.120秒timeout、それぞれの限定再実行も履歴として保持し、根因解消とはしない。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。 従来の履歴: PR #104の公開JSON更新を01:22 UTCに統合し、候補・正本・公開rawの全文一致を確認。統合後Checkは初回Socket失敗後の限定再実行で01:45:27 UTCに成功。Trialは初回全10job・6 ready成功、6実ZIPを検証。既存Site実画面はこの更新では未確認。更新経路の限定完了と、更新ごとの表示確認を区別する。 従来の確認: PR #102をmain 949bceb5へ統合し、20:16:38 UTC観測snapshot/19:58:08 UTC診断成果の正本・raw・候補全文一致、既存Siteの33工程と詳細・実測ガント・取得を確認済み。公開経路・実成果物の検証完了を22:21 UTCに確認。PR #102初回Check起動失敗と統合後Check初回TCP guard失敗を保持し、統合後Check初回失敗とTrial初回全10job/6 ready・6実ZIP検証を区別する。通常のJSON同期にSite再配備は不要。新しいモバイルQAは実施していない。 後続の同一SHA Check限定再実行は22:32:33 UTCに成功。工程の成果時刻はこの後続CI検証の終端であり、最初の公開到達時刻ではない。",
       "waitReason": "公開データ読取・更新経路の限定工程は完了。更新ごとの実装状況の照合と保守は継続。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。",
       "nextAction": "確定した実装・検証結果を33工程と根拠を保って同期し、通常PR・該当head CI・独立レビュー・main読戻しで検証する。既存Siteの表示確認は利用制約が解消するまで保留し、再取得や代替経路で迂回しない。通常のJSON更新にSite再配備は不要。",
       "dependencies": [],
@@ -1080,6 +1084,18 @@
         {
           "label": "更新手順",
           "url": "https://github.com/g-kari/devsecops-console/blob/main/docs/site-roadmap-update.md"
+        },
+        {
+          "label": "PR #108（JSON統合・Site表示未検証）",
+          "url": "https://github.com/g-kari/devsecops-console/pull/108"
+        },
+        {
+          "label": "PR #108統合後Check初回",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43698811819/attempts/1"
+        },
+        {
+          "label": "PR #108統合後Trial初回",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43698811792/attempts/1"
         }
       ],
       "plannedStart": null,
@@ -1470,6 +1486,12 @@
     }
   ],
   "updates": [
+    {
+      "at": "2026-11-15T12:54:06.713Z",
+      "type": "設計",
+      "text": "K275のcurrent-status受入条件12項目、公開provider契約対応、7状態・18遷移・37否定シナリオのoffline設計を受入れ。設計の独立レビューは終了。実装・動的試験の合格ではなく、SessionSnapshot変換・runtimeはNO-GO。 実装の次担当は未割当。",
+      "url": "https://github.com/g-kari/devsecops-console/blob/main/docs/web-current-status-design.md"
+    },
     {
       "at": "2026-11-15T08:04:39Z",
       "type": "検証",
