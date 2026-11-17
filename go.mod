@@ -6,7 +6,7 @@ require (
 	charm.land/bubbletea/v2 v2.1.1
 	github.com/charmbracelet/x/ansi v0.11.9
 	github.com/mattn/go-isatty v0.0.24
-	github.com/slack-go/slack v0.35.0
+	github.com/slack-go/slack v0.36.0
 	github.com/yuin/goldmark/v2 v2.1.16
 	golang.org/x/sys v0.50.0
 	gopkg.in/yaml.v3 v3.0.1
