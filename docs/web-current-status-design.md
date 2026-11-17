@@ -258,3 +258,202 @@ I12: 認証再開やrotation成功はlocal role/connector/外部操作の承認�
 ## 実装へ進む前の境界
 
 本資料は設計済みの範囲を公開するものです。実装、動的試験、実provider・client登録・稼働deploymentの適合、実ログイン・session・runtimeは未検証です。TTL、clock、sourceの観測保証、永続fence、作用先の契約が未確定な間、allow-producing受入ロジックとSessionSnapshot変換はNO-GOです。設計受入れを実装・運用完了と扱いません。
+
+
+## local-session ledger契約（文書設計のみ受入れ）
+
+2026-11-15T15:07:27.472Zに、local-session ledgerの6処理順序点と42追加negative/crash行を文書設計として受け入れました。旧12条件・7状態・18遷移・37negativeを保持します。42追加行と37旧行は全て未実行の期待結果で、79テスト合格や網羅性証明ではありません。LG01–LG09は全て未解消で、LG09の独立レビュー部分だけが完了しました。実装/API/schema/SQL migration/allow/SessionSnapshot/runtime/実provider接続はNO-GOです。K275は部分完了、次の実装工程は未割当です。
+
+以下のLS1–LS6は処理順序点です。既存の7状態や前節の根拠source記号S1–S5とは別で、状態数やsource参照を変更しません。節番号§0–§9はこのledger契約内だけを指します。比較更新revision・fence・readiness・readback観測もsession状態ではありません。
+
+本追記の固定基準はmain `7b4a675b510800756fe017230a9768719820057a`。上記の既存設計と公開provider sourceの固定参照はそのまま保持します。受入時刻は文書設計の成果時刻であり、配信commitや実装コード統合時刻ではありません。SQLite・enrichmentのtransaction/CAS/readbackは比較設計の参考であり、auth ledger実装や現HTTP保護の証明ではありません。
+
+### 0. 判定と適用範囲
+
+**2026-11-15T15:07:27.472Zに文書設計として受入れ。独立レビュー済み、未実装・未実行。** 既存12受入条件、7状態(U/W/F/C/R/H/D)、18遷移(T01–T18)、37negative(N01–N37)をそのまま継承する。以下LS1–LS6は処理順序点であって新しいsession状態ではない。保存結果・送信履歴・owner readinessも別の観測分類であり、7状態への追加ではない。T17は常に拒否し、本契約のどの結果もallow/session/Grantを生成しない。
+
+目的はlocal側の相関・終端・不確定結果の保持要件を明確にすること。実API、schema、SQL migration、token保管仕様、credential、login、provider呼出、成功fixtureを作らない。実装scopeの承認にもならない。
+
+前提候補は「単一owner、同一権威DB」。これは運用事実ではない。全writer・全利用入口・dispatch・作用先が同一の排他/順序契約に従う証拠が必要。既存Storeのmutex/1 connection、file SQLiteの存在だけでは成立しない。ledgerを追加しただけで現HTTPが保護されるわけではない。
+
+### 1. 分離する概念
+
+- **束縛tuple B**: (I,C,S,T,L,G,H,R)。I/C/Sはexact issuer/RP client/pairwise subject、Tは完了認証transaction、L/Gはlocal sessionとその世代、Hは信頼済み交換で得た個別refresh対象へのopaque参照、Rはlocal rotation世代。意味と由来を固定するだけで、識別子の実値/保存形式/秘密の置き場は定めない。VerifiedIdentityだけでT/Hを証明しない。
+- **Q,E**: 問い合わせ相関と受付epoch。現Bに結び、現受付Qは高々1。開始後のBを変更しない。閉鎖済みQを再利用しない。Qの大小はprovider読取順ではない。
+- **X**: 唯一のrotation transaction相関。G/旧H/Rへの束縛。X未解決の間に次Xを始めず、後着結果で別Xを完了させない。
+- **v**: local ledger比較更新revision。判定した状態を別writer更新後に上書きしないための値。全関連状態変更を比較対象に含める。vはprovider versionでもstatus鮮度でもない。
+- **f**: 作用・受付の無効化を表す永続fence。Gとowner系譜に束縛し、終端・rotation開始・受付破棄などのイベントで旧証拠を使えなくする。具体的増分形式は未定。単なるvの大小を外部受信側が信用する契約はない。v/f/G/Eを同一視しない。
+- **owner epoch と clock epoch**: 前者は排他的ownerの系譜、後者は単調時間の比較可能範囲。再起動で同じと仮定しない。永続化した数値を読むだけでowner取得又はclock連続性の証明にはならない。
+- **terminal と recovery constraints**: Dの同G吸収性、Hの原因と再認証必須/未解決X等の制約。候補・待機者・受付Q/Xの閉鎖と同一の原子的変更に含める。再認証必須は後続の通信/時計回復で弱めない。
+- **candidate**: 相関済み応答の意味と元のm0/m1/clock epoch等。許可ではない。同Q再配達/readback/待機者配布で時刻を作り直さない。実応答/secretの保存形式はここで決めない。
+
+ID/revision/fenceの非再使用、overflow時停止、履歴保持上限、GC条件は未確定。既存enrichmentの4世代/5checkpointは流用しない。D記録又はそれと同等の非復活証明を失うGCは許容しない。有限保持を正当化する遅延上限がなければ安全な削除時点を創作しない。
+
+### 2. 共通commitと運用停止の契約
+
+**C1 比較と更新**: B、v、owner系譜、現state、Q/E/X、terminal、回復制約、関連期限の判定と更新は同じ権威DB transactionの一体的操作でなければならない。外部問い合わせをDB transaction内に入れて原子化したとは扱わない。競合は一方だけ成立し、敗者は現状態を再評価する。再評価は送信の自動再試行を許可しない。
+
+**C2 線形化**: 成功を確認したcommitがlocal状態変更の順序点。確定していないcommitを成功/失敗どちらにも補完しない。Commit errorや応答喪失は保存済みの可能性がある。readbackは同一の保持済み要求・期待結果に対してmatched/missing/conflict/unknownを分ける設計候補。matchedは保存内容の証明に限定し、送信、provider未処理、所有権、現行fence、鮮度、認証成功の証明ではない。missingもprovider未処理や自動再送許可ではない。
+
+**C3 fail-stop**: local保存失敗/不明では、D既知ならDを緩めず、他はH相当の利用禁止として扱う。ただし書込不能時に「Hが永続化済み」とは主張しない。owner readinessを閉じて新規状態受理・dispatch・作用開始を停止する必要がある。readinessはsessionの8番目の状態ではなく運用上の入口制約。
+
+全owner停止が成立する条件は、(a)唯一ownerが実際に排他的である、(b)全入口がready判定だけでなく同一の競合制御下で開始/停止を順序付ける、(c)ready喪失時に未開始処理を失効できる、(d)旧ownerが入口を迂回して動けない、(e)再起動ownerは初期値closedで復旧審査を終えるまで入口を開けない、の全て。保存するstop flagだけでは(a–e)を証明しない。process-local bool/mutexだけで複数ownerを止められるとはしない。全ownerへの停止伝達・隔離が証明できなければ配置全体NO-GO。単なる「検知したら停止」は検知できないDB rollbackを解決しない。
+
+既に送信/Bを越えた処理はC3で巻き戻らない。受付拒否と新規開始禁止を行い、B/K契約に従う。read-only照会の物理flightが残ることを許す場合も、受理可能Qは1件のみ。rotation不明は再認証必須を保持する。利用入口が安全に閉じた証明なしに、失敗をDBへ記録できなかった状態からサービスを続けない。
+
+**C4 durability**: transaction rollbackは未commit local SQLの範囲だけ。電源断、fsync、storage corruption、backup、DBコピー/復元、writer交代への保証は別。DBが過去へ戻ればv/f/tombstoneも戻り得る。外部の非巻戻し根拠や旧owner隔離などの方法と実証は未定で、検知不能な復元を安全に処理できるとは主張しない。この不確実性がある環境は起動を閉じたまま。信頼境界を回復して旧writer/コピーを排除した後に新T/Gで再認証する必要があり、新認証だけでインフラ問題は解決しない。
+
+### 3. LS1 開始commit→送信（T02/T03/T08）
+
+W/C又はT08を満たしてWへ戻れるHについて、現B/owner/v、非terminal、現Q/Xなし、clock条件を確認する。HにT12、未解決X、fence復旧未証明、再認証必須が残れば開始不可。新QとE・開始m0/clock epochを固定し、旧候補を無効化してFを原子的にcommitする。m0は実送信前、以後のqueue時間を含める。並行呼出者は現Qを待つか拒否し、別Qを作らない。
+
+送信対象になれるのは確認済み開始commitの現Qだけ。ただしcommit後dispatch前の確認と実transport送信の間にはraceがある。開始commit自体もdispatch前checkも「V後にpacketは絶対送られない」を保証しない。送信境界をlogoutと共通に順序付ける別契約がない場合、その強い保証はNO-GO。V後遅れて送信された旧Qの結果はLS2で拒否し、provider未処理と主張しない。今回送信そのものを実装しない。
+
+開始commit前に停止したと確証があればこのQの開始は不成立。commit成功不明ならC3/LS6へ。commit後送信前crashでは保存Qがあっても自動送信しない。送信済み不明を含むため旧受付を復旧利用せず、LS6で候補破棄/受付閉鎖の条件を確認する。新QはT08の全条件を満たす回復可能なread-only照会だけで、旧Q再送ではない。
+
+### 4. LS2 応答commit（T04–T07/T16）
+
+信頼済みtransportによるQ↔実対象Hの相関証拠が前提。body自己申告は不可。現在のB/Q/E、owner/clock epoch、v/f、F、非terminalを同transactionで比較する。旧/重複/不一致応答は現状態を変えず破棄。現在対象の確定期限が成立していればactive:trueよりT16を優先してD。期限/clock不明ならHで制約を保持する。
+
+現Qの真正なfalseはT05としてD、候補破棄/受付閉鎖/terminal/fenceを原子的に反映。現Qの真正なactive候補はschema/経路/identity/時間条件が未成立なら採用せずH。必要条件が将来確定してもC候補まででallow不可。T07失敗はH、Q受付閉鎖/E更新、候補無効化。応答候補・失敗・終端いずれも保存結果不明ならC3/LS6。重複readbackでm0/m1を更新しない。
+
+### 5. LS3 終端commit（T05/T09/T16）
+
+真正な適用範囲が分かるlogout/失効、現対象false、現G/session又は現H/R/Gの確定期限を受理する。現状態と対象範囲を比較しD＋terminal＋旧fence失効＋Q/X受付閉鎖＋候補/待機者無効を同transactionで保存する。遠隔logout完了は待たない。未束縛/旧対象期限を現Gへ推測適用しない。
+
+Vはこの確定commit。Vが先なら旧結果・旧作用要求は拒否する。V保存不明ならC3で入口停止し、旧Cへfallbackしない。LS2 falseが先ならrotation開始不可、LS4開始が先なら旧Qのfalseは破棄。Dは同Gで吸収、新T/G以外で復活しない。新T/Gも既知の適用失効制約、owner/DB信頼回復、完全な由来の条件を満たす必要がある。
+
+### 6. LS4 rotation intent→送信→結果（T10–T13/T15/T16）
+
+唯一ownerが現G/旧H/R・非terminal・唯一X・回復制約なしを比較し、R/Xを束縛、旧Q/候補閉鎖、E/fence更新を送信前にcommitする。実rotationを未実装のまま、この順序だけを契約化する。commitとprovider送信は一つのtransactionでない。dispatch check後のVと実送信のraceを消したとはしない。送信済みが不明でも自動再送/旧H復元は不可。
+
+成功結果の取込は現X/G/旧H/R、非terminal、再認証必須なしを再比較し、同writerで現G/sessionと現旧H/Rの期限を先に判定する。確定終端ならD、未知ならH＋X受付閉鎖＋再認証必須。期限前が確かで結果/新対象の由来も確かなら新H/新Rを原子的に保存してWへ。新status確認は別Q。成功自体は認証/現状態保証でも権限増加でもない。
+
+明確失敗又はtimeout/不明(T12)、R中clock喪失(T15)、R中期限不明は、H・未解決X/原因・X受付閉鎖・同G再認証必須を保持する。後着成功/重複で解除しない。送信前crashで未送信を確実に示せない場合も同じ保守制約。実装時に「確実に未送信ならRを戻す」という新遷移を追加することは本契約では認めない。
+
+期限競合: 旧H/Rの確定期限が先ならDで遅い成功拒否。期限前の成功取込commitが先なら旧H/R期限eventは捨てる。一方現G/session期限はrotation後もDを生む。結果commitが曖昧なら新Hを採用済みとも旧Hが有効とも補完しない。providerで新対象が発行済みの可能性と、local不採用を分ける。cleanup/revokeは本契約の自動操作ではない。
+
+### 7. LS5 最終利用と作用（T17、J/B/K）
+
+**本工程は常に拒否。** 将来の検討条件だけを記す。Jはidentity/status/local認可/CSRF/object scope/command/別承認の最終審査、Bは作用開始、Kは取消不能確定。Policy.AllowsのboolはBへの永続許可券ではない。
+
+同一権威DB内だけの作用なら、現Btuple/v/f/terminal/期限/現在policy revision等の評価と対象writeを同じtransactionで行う案が考えられる。Vが先にcommitすれば旧作用を拒否、作用commitが先なら後続Vが既存効果を取消したとは言わない。DB transaction内で途中の外部I/Oを呼ぶ設計は同一DB作用の範囲外。
+
+外部作用は受信側fence検査・idempotency・VとB/Kを含む共通順序保証が必要。fence文字列を送るだけ、重複抑止だけ、outboxに記録するだけ、dispatch直前checkだけでは不足。VがJ後B前ならBで拒否できる契約、B後K前なら操作固有の安全中断点、K後なら後続停止だけを区別する。必要な受信側契約がない操作はNO-GO。送信済み外部作用をlocal transaction rollback/process killで取消せるとはしない。
+
+### 8. LS6 restart/readback（T06/T13–T16/T18）
+
+起動時のowner readinessはclosed。唯一owner性、権威DBの非巻戻し/履歴完全性、旧owner隔離、terminal/制約、現在epochの保証を検証できるまで受付/dispatch/利用を開けない。readback matchedだけではこれらを復旧できない。DB復元/複製/ABAを検知不能なら安全復旧手順未成立のため停止、信頼を再構築するまでは新認証も運用再開の根拠にしない。
+
+Dを保持し、他状態の保存candidate/古いQはclock連続性や順序保証を推測して復活させない。新clock epochへのm0/m1移植は禁止。R又は未解決Xがあれば受付閉鎖、H/再認証必須。その他もT15で候補破棄/受付閉鎖、既存回復制約を保持。回復可能なread-only失敗だけT08全条件が再成立すれば新Qへ進む候補を検討できる。fence/終端/clockの確実性が戻らなければ同G再開不可。
+
+readback観測のmatched/missing/conflict/unknownはsession stateの追加ではない。matchedはhistorical storage proofであり、現owner/fenceの証明と別。conflict/unknownは停止を維持。missingも安全な再送やID再使用を許さない。commit後ack喪失とcommit前失敗を区別できない場合、重複送信で解決しない。D/H制約と未解決Xの保持を証明できない復旧はNO-GO。
+
+### 9. clockと未確定事項
+
+provider sourceの観測・lagとlocal単調clockを分離する。m0/m1/uは同じclock epoch内でのみ期間比較可能。wall clock/provider expとの対応、秒丸め、誤差上限、suspend/restart時の扱いは未確定。provider二段読取を一瞬のsnapshotとしない。Q順序、receipt時刻、iat、exp、enrichment世代をprovider観測versionへ変換しない。
+
+Delta_source/allowed/flight/apply、Clock/Expiry/Retry方針、schema上限、tombstone GC、durability/配置/owner取得/復元、送信境界、作用先の契約は未確定。元設計の必要条件候補は十分条件ではなく、値を埋めない。本文はG02/G05の設計を細分しただけでG01–G07の解消を認定しない。下表のLG01–LG09が閉じるまでcandidateも実運用allowに変換しない。
+
+
+### 既存条件・遷移との対応
+
+| 元遷移 | 契約位置 | 維持する制約 |
+| --- | --- | --- |
+| T01 | §1/§3 | identityだけで対象由来を作らない、U→Wの前提 |
+| T02/T03 | §3 LS1 | 候補無効化、単一受付Q、待機/拒否 |
+| T04 | §4 LS2 | 相関・期限判定後でもC候補のみ |
+| T05 | §4/§5 | 現Q false→D、意味拡張なし |
+| T06 | §3/§4/§8 | 旧tuple/Q/E応答破棄、現状態不変 |
+| T07/T08 | §3/§4/§8 | H原因保持、回復可能なread-only照会だけ新Q候補 |
+| T09 | §5 LS3 | D、Q/X閉鎖、fence/候補無効化 |
+| T10/T11 | §6 LS4 | intent先行、唯一X、期限先検査、新対象はW |
+| T12/T13 | §6/§8 | H再認証必須・未解決X保持、遅い結果不採用 |
+| T14 | §5/§8 | 新T/Gのみ、既知失効制約とインフラ復旧は別条件 |
+| T15 | §6/§8/§9 | clock epoch喪失で候補破棄、R由来制約を保持 |
+| T16 | §4/§5/§6 | 確定期限D、未知H、旧H/Rと現G期限を区別 |
+| T17 | §0/§7 | 必ず拒否、J/B/Kは将来要件のみ |
+| T18 | §2/§8 | 保存不明はfallback不可、全入口停止の成立条件 |
+
+| 元条件 | 契約対応 | 未解消 |
+| --- | --- | --- |
+| CS01 | §0/§1/§4/§7 | identityと現在状態の独立証拠 |
+| CS02 | §1/§3/§4 | 認証transport・取得対象・実稼働適合性 |
+| CS03 | §1/§4 | exact issuerの由来対応 |
+| CS04 | §1/§4 | exact RP client帰属 |
+| CS05 | §1/§4 | pairwise subjectと対象の真正な対応 |
+| CS06 | §1/§3/§5/§6 | local世代/個別refresh/provider粒度の由来 |
+| CS07 | §2/§5/§6/§8 | 適用失効範囲、永続terminalと再認証 |
+| CS08 | §4/§6/§8/§9 | source lag、clock/expiry/TTL全方針 |
+| CS09 | §1–§6/§8 | 全owner順序、replay/ABA/復元の証明 |
+| CS10 | §2/§3/§6/§7 | 送信race、J/B/K、外部受信側契約 |
+| CS11 | §2/§4 | schema/上限/失敗分類、秘密を記録しない証跡 |
+| CS12 | §0/§7/§9 | local認可/別承認/正当session化の全gate |
+
+元N01–N37は全て継承。追加表で独立行にしていないN06（現false後の旧active）は§4/§5のD優先・旧Q拒否、N15（Q番号を観測順へ転用）は§1/§9、N17（falseの意味拡張）は§4/§5の現対象限定を適用する。下記の追加negative/crash表は各行でN/T/CS参照を明記。特にN33のH制約非緩和、N34のR時計喪失、N35の全状態期限、N36/N37の両順序はLC21/22/26/27/28/29へ対応する。既存positive gateは全て閉鎖。
+
+### 未確定gates（全て未解消、数値なし）
+
+| Gate | 必要な根拠/決定 | 元gate | 現判定 |
+| --- | --- | --- | --- |
+| LG01 | 認証transactionのI/C/S/T/L/G/H由来と安全保管境界、実client/issuer適合 | G01/G02 | NO-GO |
+| LG02 | 全writer/入口の排他、owner取得/交代/隔離、同一権威DB配置の実証 | G02 | NO-GO |
+| LG03 | 永続commit耐久性、backup/restore/複製/ABA、非巻戻し根拠、旧owner排除 | G02 | NO-GO |
+| LG04 | 失敗/不明commit時のC3全入口停止、closed起動/復旧、readback意味論 | G02/G05 | NO-GO |
+| LG05 | Q/Xとtransport送信境界、Vとdispatchのrace、送信不明の取扱い | G02/G05 | NO-GO |
+| LG06 | Delta_source/allowed/flight/apply、clock epoch/誤差/suspend/expiry/Retry方針 | G03 | NO-GO |
+| LG07 | 応答schema/上限、ID非再使用/overflow、terminal保持/安全GC、失効範囲 | G02/G04 | NO-GO |
+| LG08 | J/B/K、現在policy revision、同DB作用又は受信側fence/idempotency/共通順序、安全中断 | G05 | NO-GO |
+| LG09 | 本契約の独立レビュー、別途offline実装scope/試験承認、nonce/PKCE/state/callback/cookie/CSRF/route/object scope | G06/G07 | NO-GO |
+
+元のoffline状態遷移設計のレビュー受入れを維持する。今回、LG09の本契約の独立レビュー部分だけが完了した。別途offline実装scope/試験承認とnonce/PKCE/state/callback/cookie/CSRF/route/object scopeは未解消であり、LG09全体もNO-GOのまま。LGが未解消でも本資料の受入れは文書設計に限定され、C→allow/SessionSnapshotの経路は定義しない。
+
+
+### 追加negative/crash順序表（42行、未実行）
+
+設計レビュー用。42行は試験passでも網羅性証明でもない。元N01–N37を置換せず追加の切断点を示す。全行allow出力なし。C3/readinessは別の運用制約で7状態追加ではない。
+
+| ID | 順序点 | 切断点/競合 | 必須結果 | 元遷移 | 元negative | 条件 |
+| --- | --- | --- | --- | --- | --- | --- |
+| LC01 | LS1 | 別T/L/G/Hで開始 | 束縛拒否。由来を文字列で補完しない | T01/T02 | N02/N03/N04 | CS02/CS03/CS04/CS05/CS06 |
+| LC02 | LS1 | 同vで2writerがQ開始 | 高々一方成立。排他証明なしはC3停止。2つを現Qにしない | T02/T03/T18 | N14/N27 | CS06/CS09 |
+| LC03 | LS1 | 開始commit前の確定失敗 | 新Q成立としない。利用禁止/必要なC3処理。自動再送権なし | T18 | N27 | CS09/CS11 |
+| LC04 | LS1/LS6 | 開始commit成功不明 | closed/readback。matchedでも送信権なし | T15/T18 | N20/N27 | CS08/CS09 |
+| LC05 | LS1/LS6 | 開始commit後・送信前crash | 保存Fから自動dispatchしない。旧受付閉鎖/候補破棄、T08条件が満たされる場合だけ別Qを検討 | T15/T08 | N12/N20 | CS08/CS09 |
+| LC06 | LS1/LS3 | dispatch check後にV、その後transport送信 | V後未送信保証を主張しない。旧結果拒否。強い送信保証が必要ならNO-GO | T09/T06 | N05/N22 | CS07/CS09/CS10 |
+| LC07 | LS2/LS3 | active反映Aの後V | Cが存在してもVでD/閉鎖/無効。許可出力なし | T04/T09/T17 | N05/N22 | CS07/CS09/CS10 |
+| LC08 | LS2/LS3 | Vの後active反映を試行 | 現v/f/terminal比較で拒否、D維持 | T09/T06 | N05 | CS07/CS09 |
+| LC09 | LS2 | 同Qの重複/readback/待機者配布 | 元m0/m1を保持、freshness更新不可 | T06 | N13 | CS08/CS09 |
+| LC10 | LS2 | response commit成功直後にack喪失 | 保存結果不明。readbackは保存証明のみ、候補再発行なし | T18/T06 | N13/N27 | CS08/CS09/CS11 |
+| LC11 | LS2 | timeout後の旧active/false | 旧Q/Eで現状態変更不可。falseも新Gへ適用しない | T07/T08/T06 | N12 | CS06/CS09 |
+| LC12 | LS2 | 未認証/不明schema/型/上限/経路 | 現QはH、候補無効。成功boolに補完不可 | T07 | N16 | CS02/CS11 |
+| LC13 | LS3 | D保存失敗/結果不明、stop flagも保存不能 | D永続済みと称さない。C3全入口停止条件が必要。条件なしは配置全体NO-GO | T09/T18 | N27 | CS07/CS09/CS10 |
+| LC14 | LS4/LS2 | rotation開始commitの後旧Q false | 旧Q閉鎖済み、R/後続新Rを変えない | T10/T06 | N07 | CS06/CS09 |
+| LC15 | LS2/LS4 | 現Q false commitの後rotation開始 | Dで開始拒否 | T05/T10 | N08 | CS07/CS09 |
+| LC16 | LS4/LS6 | rotation intent commit前確定失敗 | R開始成立としない。送信なしを別途証明、勝手なretryなし | T18 | N27/N31 | CS09/CS11 |
+| LC17 | LS4/LS6 | intent commit後・送信直前crash | 保存R/Xは送信権でない。未送信確証なしならH/再認証必須、同G巻戻しなし | T15/T12 | N10/N20/N31 | CS07/CS09 |
+| LC18 | LS4/LS6 | 送信直後・応答前crash/timeout | provider処理不明。H/未解決X/閉鎖/再認証必須、自動再送なし | T12/T15 | N10/N31 | CS07/CS09 |
+| LC19 | LS4/LS6 | provider成功後・local結果commit前crash | provider発行可能性とlocal不採用を分ける。H制約、旧H復活不可 | T12/T15/T13 | N10/N34 | CS07/CS09 |
+| LC20 | LS4/LS6 | 結果commit成功後ack喪失 | readbackが新H/R保存を示しても新送信/許可/鮮度なし。restart時候補無効、未解決結果の制約を勝手に解除しない | T18/T15/T13 | N09/N20/N34 | CS08/CS09 |
+| LC21 | LS4 | T12の明確失敗後に時計/通信回復 | Hの再認証必須保持、T08禁止 | T12/T08 | N10/N33 | CS07/CS09 |
+| LC22 | LS4 | Rでclock epoch喪失後に成功遅着 | H/未解決X/閉鎖/再認証必須、遅い成功拒否 | T15/T13 | N34 | CS08/CS09 |
+| LC23 | LS3/LS4 | Vの後rotation成功 | D維持、結果不採用。remote cleanupを勝手に実行しない | T09/T13 | N11 | CS07/CS10 |
+| LC24 | LS4 | X1受理後X2受理、遅れてX1重複 | 旧Xは現H/Rを戻さない。未解決X1でX2開始は禁止 | T11/T13 | N09 | CS06/CS09 |
+| LC25 | LS2/LS3 | Fで現対象確定期限を過ぎactive受信 | T16優先D。clock/期限が不明ならH、期限前と補完不可 | T04/T16/T15 | N21 | CS08 |
+| LC26 | LS3 | W/F/R/Hで現G/session確定期限 | D/受付閉鎖。Rなら遅い結果採用不可 | T16/T13 | N35 | CS07/CS08/CS09 |
+| LC27 | LS3/LS4 | Rで旧H/R期限終端commitが成功取込より先 | D、遅い成功拒否。取込transactionでも期限を先検査 | T16/T11/T13 | N36 | CS08/CS09 |
+| LC28 | LS4/LS3 | 期限前成功取込が旧H/R期限eventより先 | 旧対象event破棄。現G/session期限ならD | T11/T16 | N37 | CS06/CS08/CS09 |
+| LC29 | LS4 | Rで期限/clock対応が不明 | H/閉鎖/再認証必須。新H採用不可 | T15/T16/T13 | N21/N34 | CS08/CS09 |
+| LC30 | LS6 | restartで保存C・旧clock epochをロード | 候補破棄/旧受付閉鎖、epoch間の時刻転記不可 | T15 | N20 | CS08/CS09 |
+| LC31 | LS6 | DB backup復元/複製/ABAが検知不能 | closed維持、配置NO-GO。新認証だけでは旧owner/コピー排除の代用不可 | T18/T14 | N27/N28 | CS07/CS09/CS10 |
+| LC32 | LS6 | GCでDを消去後旧callback到着 | 安全な非復活証明なしのGCは不可。ID再使用/旧G復活禁止 | T06/T14/T18 | N03/N28 | CS06/CS07/CS09 |
+| LC33 | LS6 | readback matchedだが別owner/現在fence不明 | 保存証明だけ。owner/送信権を与えずclosed維持 | T18/T15 | N27 | CS09/CS10 |
+| LC34 | LS6 | readback missing/conflict/unknown | 自動再送/ID再使用/旧C fallbackなし、原因制約保持 | T18/T15 | N20/N27/N31 | CS08/CS09/CS11 |
+| LC35 | LS5 | Jの後B前にV | bool/outbox/dispatch checkだけでは不足、共通順序保証なければNO-GO | T09/T17 | N22 | CS10 |
+| LC36 | LS5 | Bの後K前にV | 操作固有安全中断契約のみ。process kill/SQL rollbackを外部rollbackにしない | T17 | N23 | CS10 |
+| LC37 | LS5 | Kの後V | 遡及取消なし、後続停止。補償は別承認 | T17 | N24 | CS10 |
+| LC38 | LS5 | 外部receiverはidempotencyだけ/fence未検査 | 重複抑止は失効順序保証でない、NO-GO | T17 | N22/N23 | CS10/CS12 |
+| LC39 | LS2/LS5 | provider O後失効/二段読取の間に変更 | 瞬時失効/atomic観測を主張しない。source lag未確定gate閉鎖 | T04/T17 | N25/N26 | CS08/CS10 |
+| LC40 | LS2/LS5 | TTLをtoken寿命等から転用、receiptのみ更新 | 鮮度証明不成立、candidate利用/allow拒否 | T04/T16/T17 | N18/N19 | CS08 |
+| LC41 | LS1/LS5 | identity/activeからgrant/sessionを生成 | 全工程拒否。由来・状態・local認可は独立 | T01/T17 | N01/N30/N32 | CS01/CS04/CS12 |
+| LC42 | LS6 | 新T/Gだが適用失効/owner復旧制約が残る | 新認証だけでは再開不可、制約解消を推測しない | T14/T18 | N28/N29 | CS05/CS07/CS09 |
