@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Trial packaging tests; use synthetic environment values and a fake binary."""
+import ast
 import os
 import pathlib
 import re
@@ -13,6 +14,28 @@ TRIAL = ROOT / "packaging" / "trial"
 
 
 class TrialToolsTests(unittest.TestCase):
+    def test_native_ci_policy_keeps_arm_mac_and_marks_intel_cross_compiled(self):
+        trial = (ROOT / ".github/workflows/trial.yml").read_text()
+        release = (ROOT / ".github/workflows/release.yml").read_text()
+        for workflow, job in ((trial, "mac-smoke"), (release, "mac-test")):
+            section = re.search(r"(?ms)^  " + job + r":\n(.*?)(?=^  [a-z][a-z-]*:\n|\Z)", workflow).group(1)
+            matrix = re.search(r"(?ms)^      matrix:\n(.*?)^    runs-on:", section).group(1)
+            self.assertEqual(re.findall(r"runner: (\S+)\n\s+arch: (\S+)", matrix),
+                             [("macos-15", "arm64")])
+            self.assertNotIn("macos-15-intel", workflow)
+            self.assertIn("go test ./... -race -count=1", section)
+        ready = re.search(r"(?ms)^  ready:\n(.*)\Z", trial).group(1)
+        native = ast.literal_eval(re.search(r"native = \(goos, arch\) in (\{[^\n]+\})", ready).group(1))
+        self.assertEqual(native, {("linux", "amd64"), ("windows", "amd64"), ("darwin", "arm64")})
+        self.assertIn("os: [linux, darwin, windows]", ready)
+        self.assertIn("arch: [amd64, arm64]", ready)
+        self.assertIn("'native_binary_smoke': native", ready)
+        self.assertIn("'full_native_race_tests': goos in ('linux', 'darwin') and native", ready)
+        self.assertIn("else 'not run; cross-compiled only'", ready)
+        self.assertIn("'mac-smoke (arm64 only)'", ready)
+        self.assertNotIn("mac-smoke (arm64 and amd64)", ready)
+        self.assertIn("macOS amd64 (Intel)", (TRIAL / "TRIAL-START.md").read_text())
+
     def test_failed_job_retries_keep_the_producer_artifact_and_attempt(self):
         workflow = (ROOT / ".github/workflows/trial.yml").read_text()
         reference = "${{ needs.build.outputs.artifact_name }}"
