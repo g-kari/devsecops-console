@@ -60,9 +60,11 @@ Intel Mac native jobを対象外とし、Linux amd64・Windows amd64・Darwin ar
 
 ## 依存宣言の限定受入れ
 
-固定した依存宣言の実bytesを照合し、3 root go.modと一段目24組のうち15組を既存go.sumの期待h1で受入れ。残る8組は取得timeout、1組は固定seedに期待hashなし。これは宣言資料の受入れであり、選択module graph・target import closure・完全source corpus・toolchain全体の認証ではない。
+一段目24組の依存宣言について、新たに6組のgo.mod実bytesを固定mainのgo.sum期待h1と照合し、受入れは15/24から21/24へ増えた。残るsortutil/strutil v1.2.1の2組は読取timeoutで停止、x/sys v0.49.0は期待 /go.mod hashがなく未取得。これは宣言資料であり、MVS選択graph・target import closure・完全source corpus・toolchain認証・Go/SQLite実行ではない。
 
-3 rootはsqlite v1.62.0、libc v1.80.1、x/sys v0.50.0。一段目は重複前33宣言、異なるmodule/versionが24組で、既受入れroot libcを含む15組が一致した。8 timeoutはbody/HTTP statusを取得できておらず、拒否やupstream障害とは断定しない。x/sys v0.49.0は固定seedに期待 /go.mod hashがなく取得していない。宣言versionの混在だけではMVS競合と断定しない。
+3 rootはsqlite v1.62.0、libc v1.80.1、x/sys v0.50.0。一段目は重複前33宣言、異なるmodule/versionが24組。既受入れroot libcを含む21組が期待h1に一致した。宣言versionの混在だけではMVS競合と断定しない。
+
+前工程では8組がtimeoutで15/24だった。今回はその8組だけを同じ公式proxy URLへ各1回、並列2・socket 20秒・応答64KiB・redirectなしで読み、6組を受入れ、2組は再びtimeoutとなった。初回記録は保持し、今回内の追加再試行・代替取得は行っていない。20秒はsocket上限で、全体wall上限ではない。timeoutはHTTP status/bodyなしで、拒否やupstream障害とは断定しない。
 
 [固定mainのgo.sum](https://github.com/g-kari/devsecops-console/blob/22c4008fd7c71dcd0d3993bc6423c5fa102e9d61/go.sum)とのh1照合であり、新規sumdb照合・署名認証・全ソース検証ではない。通常appのLinux成果物から読み取った28依存のbuild infoも、R3の選択依存や全targetの不要依存を証明しない。tool/testらしい名前やindirect属性だけで除外しない。
 
@@ -81,3 +83,13 @@ Intel Mac native jobを対象外とし、Linux amd64・Windows amd64・Darwin ar
 初回設計ではpackage closureとsource認証の順序に循環があり、独立レビューで分離した。bool/intを同値とするモデルの比較も厳密型判定へ補正した。初回結果を破棄せず、R2の限定受入れと区別する。
 
 公式資料: [Go Modules Reference](https://go.dev/ref/mod#require-directive)、[Lazy loading](https://go.dev/ref/mod#lazy-loading)。これらは段階分離の設計根拠であり、固定future toolchainの実挙動を未実行のまま証明するものではない。
+
+## PR #113の統合後確認と今回の宣言入力
+
+PR #113を2026-11-18 12:20:08 UTCにmain efcf63daへ通常統合。事後Check 44302933916はBrowser.getVersion timeoutで初回失敗し、証拠保全後の同SHA failed-job限定1回再試行（attempt 2）で12:37:43 UTCに成功。原因修復とは扱わない。Trial 44302933824はattempt 1で全9 job・6 ready成功、candidateと6実配布ZIPを独立受入れ済み。公開2ファイルのmain/raw一致は確認済みだが、Site実画面の受入れではない。
+
+新たに受入れた6組はbigfft v0.0.0-20230129092748-24d4a6f8daec、x/mod v0.42.0、cc/v4 v4.30.6-0.20261101114202-1b9d1a076f6b、ccgo/v4 v4.38.1、gc/v3 v3.2.0、goabi0 v0.2.0。今回の期待hashは[固定mainのgo.sum](https://github.com/g-kari/devsecops-console/blob/efcf63dab7bd2df47822431ee5249855e61c7198/go.sum)で、前工程のseedと全文一致。新規sumdb・署名認証、module ZIP取得やsource実行はしていない。
+
+残る宣言入力2組の取得失敗とx/sys v0.49.0の期待hash欠測を保持し、実runner所有・隔離・無通信・外部強制上限と固定toolchainの能力証拠を先に確立する。metadata選択、認証済sourceの受入れ、target package loading、closure固定、compile-only、別のruntime入口レビューという順序を維持する。不足や不明時は停止し、無条件再試行・制限緩和・事故環境のclean仮定はしない。
+
+[PR #113](https://github.com/g-kari/devsecops-console/pull/113)・[事後Check](https://github.com/g-kari/devsecops-console/actions/runs/44302933916)・[事後Trial](https://github.com/g-kari/devsecops-console/actions/runs/44302933824)の成功は、隔離runner/R3 runtimeの実証ではない。Intel nativeとSite visualは未検証、lint63件は既存のcontinue-on-errorとして残る。
