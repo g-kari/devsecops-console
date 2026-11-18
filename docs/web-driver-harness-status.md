@@ -1,6 +1,6 @@
 # K275 driver harness: 静的検証の現在地
 
-本資料は2026-11-18 02:41 UTCまでに確定した限定成果を記す。R3は未実行のソース候補であり、Goのcompile/gofmt・SQLite実行・認可runtimeの受入れではない。K275全体とLG01–LG09の本番条件は未解決である。
+本資料のR3静的成果は2026-11-18 02:41 UTCまでの確定結果を記す。後段のIntel Mac CI対象変更は、それとは別の検証範囲変更である。R3は未実行のソース候補であり、Goのcompile/gofmt・SQLite実行・認可runtimeの受入れではない。K275全体とLG01–LG09の本番条件は未解決である。
 
 ## 既存の統合と今回の変更
 
@@ -42,6 +42,12 @@ R3固定ソースは14,452 bytes、SHA256 33de3507a076f00204ce648d43a3df4e1cfa7c
 
 ## 公開状態と境界
 
-この変更は公開資料・ロードマップの同期のみ。製品コード、CI guard、認証・権限、DB、provider/client登録、Site本体は変更しない。公開JSONの配信確認とSite実画面の受入れは別であり、実画面は未検証のまま。各工程の過去観測時刻を保持し、全33工程を今回再検証したとは扱わない。
+この変更は公開資料・ロードマップの同期と、下記のIntel Mac native CI対象除外を含む。製品コード、認証・権限、DB、provider/client登録、Site本体は変更しない。公開JSONの配信確認とSite実画面の受入れは別であり、実画面は未検証のまま。各工程の過去観測時刻を保持し、全33工程を今回再検証したとは扱わない。
 
 [current-statusの既存設計](./web-current-status-design.md)にある実装NO_GOと失効・状態・local認可の独立境界を維持する。
+
+## Intel Mac CIの対象変更
+
+本人の指示によりTrialとReleaseのIntel Mac native jobを対象から外す。Apple Silicon・Windows・Linuxの既存検証、race/count、各時間上限、checksum/provenance、配布対象は維持する。Intel Mac（darwin/amd64）のcross-buildは残るが、native binary smokeとfull native race testは未検証であり、Trialのmanifestにもその範囲を記す。
+
+[PR #112のTrial](https://github.com/g-kari/devsecops-console/actions/runs/44233264864)は旧headで初回・限定再試行ともinternal/store packageの10分上限を超過した。その失敗履歴は保持し、この対象変更を遅延原因の修復やIntelでの成功と扱わない。新しい自然CIの結果とも区別する。Release workflow自体はこの変更の検証として実行せず、tag作成・Release公開も行わない。R3合成driverや79認可negativeの未実行状態は変わらない。

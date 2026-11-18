@@ -81,12 +81,21 @@ normal data and services are untouched. Every launch starts fresh.
 
 - Linux amd64: full Go format/vet/build/race tests and native delivered-binary
   version/web-URL smoke through the isolated trial launcher.
-- macOS arm64 and amd64: full native Go race tests, packaging helper regressions,
+- macOS arm64 (Apple Silicon): full native Go race tests, packaging helper regressions,
   trial-launcher version/web-URL smoke; the existing Mac ZIP/launcher/checksum
   gate is also checked but that ZIP is not distributed here.
 - Windows amd64 (Windows PowerShell 5.1): vet/build, native updater regression tests, checksum and native
   delivered-binary version/web-URL smoke through the isolated trial launcher.
-- Linux arm64 / Windows arm64: cross-compiled and checksummed only; no native run.
+- macOS amd64 (Intel) / Linux arm64 / Windows arm64: cross-compiled and
+  checksummed only; no native run. Intel Mac is intentionally excluded from
+  the Trial and Release native CI matrices. Its archive remains available,
+  but native binary smoke and full native race tests are not verified.
+
+The six target archives, two Mac convenience ZIP builds and six main-push ready
+artifacts are retained. For Intel Mac, the ready manifest reports
+`native_binary_smoke: false`, `full_native_race_tests: false`, and
+`smoke_scope: not run; cross-compiled only`. This policy change does not resolve
+prior Intel test timeouts or establish Intel runtime compatibility.
 
 CI does **not** establish interactive UI behavior, live integrations, Apple
 container/Podman isolation, M4 hardware behavior, launchd/service installation,

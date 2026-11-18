@@ -133,8 +133,6 @@ jobs:
         include:
           - runner: macos-15
             arch: arm64
-          - runner: macos-15-intel
-            arch: amd64
     runs-on: ${{ matrix.runner }}
     env:
       TRIAL_VERSION: ${{ needs.build.outputs.version }}
@@ -273,14 +271,14 @@ jobs:
           for item in pathlib.Path('packaging/trial').iterdir():
               assert item.is_file() and not item.is_symlink()
               shutil.copyfile(item, target / item.name)
-          native = (goos, arch) in {('linux', 'amd64'), ('windows', 'amd64'), ('darwin', 'amd64'), ('darwin', 'arm64')}
+          native = (goos, arch) in {('linux', 'amd64'), ('windows', 'amd64'), ('darwin', 'arm64')}
           manifest.update({'target_os': goos, 'target_arch': arch, 'archive': name, 'archive_sha256': digest,
               'verification_run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
               'verification_attempt_scope': 'ready assembly and checksum; native prerequisite jobs may be reused across attempts, see run job records',
               'native_binary_smoke': native, 'smoke_scope': 'isolated launcher --version / --web-url; no DB or network' if native else 'not run; cross-compiled only',
               'full_native_race_tests': goos in ('linux', 'darwin') and native,
               'windows_updater_tests': goos == 'windows' and arch == 'amd64',
-              'passed_build_native_gates': ['build', 'mac-smoke (arm64 and amd64)', 'windows-smoke (Windows PowerShell 5.1)'], 'ui_runtime_verified': False,
+              'passed_build_native_gates': ['build', 'mac-smoke (arm64 only)', 'windows-smoke (Windows PowerShell 5.1)'], 'ui_runtime_verified': False,
               'real_device_verified': False, 'signed_or_notarized': False})
           (target / 'trial-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
           sums = ''.join(f"{hashlib.sha256(item.read_bytes()).hexdigest()}  {item.name}\n" for item in sorted(target.iterdir()) if item.is_file())
