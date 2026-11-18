@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "project": "DevSecOps Console",
-  "checkedAt": "2026-11-18T13:49:17.652Z",
+  "checkedAt": "2026-11-18T15:46:31.421989Z",
   "publishedSnapshotAt": "2026-11-13T20:28:00Z",
-  "lastSubstantiveProgressAt": "2026-11-18T13:46:58.860552Z",
-  "lastSubstantiveProgressLabel": "一段目24組の依存宣言について、新たに6組のgo.mod実bytesを固定mainのgo.sum期待h1と照合し、受入れは15/24から21/24へ増えた。残るsortutil/strutil v1.2.1の2組は読取timeoutで停止、x/sys v0.49.0は期待 /go.mod hashがなく未取得。これは宣言資料であり、MVS選択graph・target import closure・完全source corpus・toolchain認証・Go/SQLite実行ではない。",
+  "lastSubstantiveProgressAt": "2026-11-18T14:33:48Z",
+  "lastSubstantiveProgressLabel": "PR #114は14:16:03 UTCにmain a58926bへ通常統合。事後Check 44322387691は6 job、Trial 44322387121は9 job・6 readyが同merge・attempt 1で成功し、最後のjobは14:33:48 UTCに完了。実browser ZIPの32ケース・10フロー・29 PNGの構造/hash、candidateと6 ready ZIPの実bytesを独立受入れ済み（限定PASS、P1/P2=0）。これはGitHub承認・visual・R3 runtimeの合格ではない。",
   "lastCodeMergeAt": "2026-11-18T05:12:18Z",
-  "mainSha": "efcf63dab7bd2df47822431ee5249855e61c7198",
+  "mainSha": "a58926b07b9c0b9fa81f8f37ea0bf2e0311f489a",
   "repository": "https://github.com/g-kari/devsecops-console",
   "scopeNote": "コード統合、各変更の検証、正式版収録、本番稼働を分ける。main SHA・PR一覧・CIはcheckedAt時点の観測値。成果時刻と公開JSONの配信commitは別。資料更新の統合・配信確認は対応するPRと作業記録で追跡する。 掲載PRはcheckedAt時点の歴史的観測であり、配信後の現在一覧を自動追跡した結果ではない。 各rowのlastCheckedAtと既存履歴の観測時刻を保持し、全33工程の再検証を意味しない。PR期間は観測された作成〜統合期間であり、連続実装労働時間ではない。",
-  "currentFocus": "K275は依存宣言21/24の限定受入れ。隔離runner・完全入力・Go/SQLite実行は未成立。 残る宣言入力2組の取得失敗とx/sys v0.49.0の期待hash欠測を保持し、実runner所有・隔離・無通信・外部強制上限と固定toolchainの能力証拠を先に確立する。metadata選択、認証済sourceの受入れ、target package loading、closure固定、compile-only、別のruntime入口レビューという順序を維持する。不足や不明時は停止し、無条件再試行・制限緩和・事故環境のclean仮定はしない。 K305のブラウザーCI根因とSite実画面は未確認。今回の照合範囲はK275/K309とmain/PR/CIで、他31工程の再検証ではない。",
+  "currentFocus": "K275は依存宣言21/24の限定受入れ。隔離runner・完全入力・Go/SQLite実行は未成立。 残る宣言入力2組の取得失敗とx/sys v0.49.0の期待hash欠測を保持し、実runner所有・隔離・無通信・外部強制上限と固定toolchainの能力証拠を先に確立する。metadata選択、認証済sourceの受入れ、target package loading、closure固定、compile-only、別のruntime入口レビューという順序を維持する。不足や不明時は停止し、無条件再試行・制限緩和・事故環境のclean仮定はしない。 K305のブラウザーCI根因とSite実画面は未確認。今回の照合範囲はK309のPR #114事後受入れとmain/PR/CI。他32工程は既存記録を保持し、再検証ではない。",
   "openPullRequests": [],
   "ci": {
     "status": "success",
-    "label": "PR #113を2026-11-18 12:20:08 UTCにmain efcf63daへ通常統合。事後Check 44302933916はBrowser.getVersion timeoutで初回失敗し、証拠保全後の同SHA failed-job限定1回再試行（attempt 2）で12:37:43 UTCに成功。原因修復とは扱わない。Trial 44302933824はattempt 1で全9 job・6 ready成功、candidateと6実配布ZIPを独立受入れ済み。公開2ファイルのmain/raw一致は確認済みだが、Site実画面の受入れではない。 Checkの既成功5 jobは元の時刻・stepsによる再掲で、新しい5回の実行ではない。push lintの63 issuesはcontinue-on-errorで残り、clean lintとはしない。Intel nativeは対象外のまま。",
-    "url": "https://github.com/g-kari/devsecops-console/actions/runs/44302933916",
-    "checkedAt": "2026-11-18T13:49:17.652Z"
+    "label": "PR #114は14:16:03 UTCにmain a58926bへ通常統合。事後Check 44322387691は6 job、Trial 44322387121は9 job・6 readyが同merge・attempt 1で成功し、最後のjobは14:33:48 UTCに完了。実browser ZIPの32ケース・10フロー・29 PNGの構造/hash、candidateと6 ready ZIPの実bytesを独立受入れ済み（限定PASS、P1/P2=0）。これはGitHub承認・visual・R3 runtimeの合格ではない。 PR時Checkの初回Browser.getVersion timeoutと1回限定再試行成功は保持。Node/Chrome版が異なるため制御された再現試験でも原因修復でもない。Intel nativeは対象外・未検証、Site実画面も未検証。 既存lint 63件はcontinue-on-errorとして保持しclean lintとは扱わない。",
+    "url": "https://github.com/g-kari/devsecops-console/actions/runs/44322387691",
+    "checkedAt": "2026-11-18T15:46:31.421989Z"
   },
   "rows": [
     {
@@ -965,10 +965,10 @@
       "phase": "公開資料",
       "status": "complete",
       "owner": "更新経路の限定工程完了 / 進捗同期は継続",
-      "lastCheckedAt": "2026-11-18T13:49:17.652Z",
-      "lastProgressAt": "2026-11-18T12:41:56.814155Z",
+      "lastCheckedAt": "2026-11-18T15:46:31.421989Z",
+      "lastProgressAt": "2026-11-18T14:33:48Z",
       "activityAt": null,
-      "latestAchievement": "PR #113を2026-11-18 12:20:08 UTCにmain efcf63daへ通常統合。事後Check 44302933916はBrowser.getVersion timeoutで初回失敗し、証拠保全後の同SHA failed-job限定1回再試行（attempt 2）で12:37:43 UTCに成功。原因修復とは扱わない。Trial 44302933824はattempt 1で全9 job・6 ready成功、candidateと6実配布ZIPを独立受入れ済み。公開2ファイルのmain/raw一致は確認済みだが、Site実画面の受入れではない。 Check実artifactは32 cases/10 flows/29 PNGの構造・hash検証までで、visual reviewではない。 前工程の記録: PR #112を2026-11-18 05:12:18 UTCにmain 22c4008fへ通常統合。統合後Check 44242593703はattempt 1で全6 job成功（05:17:58 UTC）、Trial 44242593076はattempt 1で全9 job・6 ready成功（05:26:29 UTC）。6実配布ZIPのCRC・checksum・manifest/source・candidate内bytesを独立受入れ済み。公開JSONとmainの一致を確認したが、Site実画面の受入れではない。 Intel Mac native jobを対象外とし、Linux amd64・Windows amd64・Darwin arm64のnative検証を維持。Darwin amd64を含む6対象のcross-build配布は維持するが、Intel Mac native smoke/full raceは未検証。旧Intel package timeoutの2失敗は履歴に残り、原因修復とは扱わない。Release workflowの実行・tag作成・正式版公開はしていない。push lintの既存63 issuesはcontinue-on-errorで残る。 従来の履歴: PR #109の公開資料2ファイルを13:31:03 UTCにmain 7b4a675bへ統合。候補・main・公開rawの全文一致を確認し、技術限定工程は13:53:33 UTCに終了。配信内容のcheckedAt 12:56:08 UTCは過去の観測snapshotであり、実公開commit・現在の照合時刻とは別。 PR #109統合後Check 43719405054はattempt 1で全6job成功（最終13:35:47 UTC）。Trial 43719405062はattempt 1で全10job・6 ready成功（最終13:50:51 UTC）。実Check artifactと6実配布ZIPは独立受入れ済み。32cases/10flows/29PNGのbytes・hash・寸法と、6ZIPのCRC・checksum・manifest/source・candidate内tar一致・配布補助4ファイルのGit blobを確認。画像の目視・Site実画面の合格ではない。native smokeはLinux amd64・Mac amd64/arm64・Windows amd64、Linux/Windows arm64はcross-compileのみ。正式release v0.5.0は不変。 PR #109段階のCheck 43717357308は初回Browser.getVersionの10014ms timeoutで失敗し、cleanup開始後11477msに遅い応答を観測。同一SHAの失敗jobだけを上限1回再試行しattempt 2成功、他5jobは初回結果の再掲。初回はChrome 157.0.8103.50/Node v24.22.2/ImageVersion 20261111.196.1、再試行はChrome .78/Node v24.22.3/ImageVersion 20261111.82.6。事後Checkは初回と同じ報告version群で成功したが、runner状態の同一性やtimeout根因修復を証明しない。schema1/status0/records=[]で原因未捕捉、既存push lint continue-on-errorの63issuesも残る。PR Trial 43717357338は初回4 native/build成功、main限定readyはPRではskip。 従来の履歴: PR #108の公開JSON更新を09:20:51 UTCに統合。106,127 bytesの候補・main正本・公開rawの一致を確認した。配信JSONのcheckedAt 08:13:47 UTCは歴史snapshotで、現在の観測時刻ではない。 PR #108の公開JSON更新をmain 648c2852へ09:20:51 UTCに統合。統合後Check 43698811819は初回6/6job成功（最終job 09:27:15 UTC、run更新09:27:16 UTC）。Trial 43698811792は初回10/10job・6 ready成功（最終ready 09:41:09 UTC、run更新09:41:10 UTC）。6実ZIPの独立受入れはCI完了とは別に確認済み。資料変更の検証であり、新しい認証実装・根因修復・正式版収録・Site表示確認ではない。正式v0.5.0は不変。 従来の履歴: PR #106の公開JSON更新を04:49:25 UTCに統合し、94,600 bytesの候補・正本・公開rawの全文一致を確認。配信内容のcheckedAt 03:47:13 UTCは歴史snapshotであり、配信commitや現在の観測時刻とは別。 PR #106統合後Check 43678422746のattempt 1は旧未完TCP guardで失敗。非空lifecycle診断の上位CONNECT ENDにERR_ABORTED(-3)を観測したが、取消元・peer・child TCP結果・根因は不明。独立レビュー後、同一SHAの失敗jobのみ1回再実行しattempt 2のgo-checkは05:15:58 UTCに成功、他5jobは初回成功の再掲。再実行のschema1空診断は初回の観測を否定せず原因修復の証拠でもない。Trial 43678422724は初回全10job・6 ready成功（最終ready 05:04:54 UTC）、6実ZIPを検証済み。PR段階の初回Check起動timeoutとTrial Intel package 600.120秒timeout、それぞれの限定再実行も履歴として保持し、根因解消とはしない。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。 従来の履歴: PR #104の公開JSON更新を01:22 UTCに統合し、候補・正本・公開rawの全文一致を確認。統合後Checkは初回Socket失敗後の限定再実行で01:45:27 UTCに成功。Trialは初回全10job・6 ready成功、6実ZIPを検証。既存Site実画面はこの更新では未確認。更新経路の限定完了と、更新ごとの表示確認を区別する。 従来の確認: PR #102をmain 949bceb5へ統合し、20:16:38 UTC観測snapshot/19:58:08 UTC診断成果の正本・raw・候補全文一致、既存Siteの33工程と詳細・実測ガント・取得を確認済み。公開経路・実成果物の検証完了を22:21 UTCに確認。PR #102初回Check起動失敗と統合後Check初回TCP guard失敗を保持し、統合後Check初回失敗とTrial初回全10job/6 ready・6実ZIP検証を区別する。通常のJSON同期にSite再配備は不要。新しいモバイルQAは実施していない。 後続の同一SHA Check限定再実行は22:32:33 UTCに成功。工程の成果時刻はこの後続CI検証の終端であり、最初の公開到達時刻ではない。",
+      "latestAchievement": "PR #114は14:16:03 UTCにmain a58926bへ通常統合。事後Check 44322387691は6 job、Trial 44322387121は9 job・6 readyが同merge・attempt 1で成功し、最後のjobは14:33:48 UTCに完了。実browser ZIPの32ケース・10フロー・29 PNGの構造/hash、candidateと6 ready ZIPの実bytesを独立受入れ済み（限定PASS、P1/P2=0）。これはGitHub承認・visual・R3 runtimeの合格ではない。 PR時Checkの初回Browser.getVersion timeoutと1回限定再試行成功は保持。Node/Chrome版が異なるため制御された再現試験でも原因修復でもない。Intel nativeは対象外・未検証、Site実画面も未検証。 前工程の記録: PR #113を2026-11-18 12:20:08 UTCにmain efcf63daへ通常統合。事後Check 44302933916はBrowser.getVersion timeoutで初回失敗し、証拠保全後の同SHA failed-job限定1回再試行（attempt 2）で12:37:43 UTCに成功。原因修復とは扱わない。Trial 44302933824はattempt 1で全9 job・6 ready成功、candidateと6実配布ZIPを独立受入れ済み。公開2ファイルのmain/raw一致は確認済みだが、Site実画面の受入れではない。 Check実artifactは32 cases/10 flows/29 PNGの構造・hash検証までで、visual reviewではない。 前工程の記録: PR #112を2026-11-18 05:12:18 UTCにmain 22c4008fへ通常統合。統合後Check 44242593703はattempt 1で全6 job成功（05:17:58 UTC）、Trial 44242593076はattempt 1で全9 job・6 ready成功（05:26:29 UTC）。6実配布ZIPのCRC・checksum・manifest/source・candidate内bytesを独立受入れ済み。公開JSONとmainの一致を確認したが、Site実画面の受入れではない。 Intel Mac native jobを対象外とし、Linux amd64・Windows amd64・Darwin arm64のnative検証を維持。Darwin amd64を含む6対象のcross-build配布は維持するが、Intel Mac native smoke/full raceは未検証。旧Intel package timeoutの2失敗は履歴に残り、原因修復とは扱わない。Release workflowの実行・tag作成・正式版公開はしていない。push lintの既存63 issuesはcontinue-on-errorで残る。 従来の履歴: PR #109の公開資料2ファイルを13:31:03 UTCにmain 7b4a675bへ統合。候補・main・公開rawの全文一致を確認し、技術限定工程は13:53:33 UTCに終了。配信内容のcheckedAt 12:56:08 UTCは過去の観測snapshotであり、実公開commit・現在の照合時刻とは別。 PR #109統合後Check 43719405054はattempt 1で全6job成功（最終13:35:47 UTC）。Trial 43719405062はattempt 1で全10job・6 ready成功（最終13:50:51 UTC）。実Check artifactと6実配布ZIPは独立受入れ済み。32cases/10flows/29PNGのbytes・hash・寸法と、6ZIPのCRC・checksum・manifest/source・candidate内tar一致・配布補助4ファイルのGit blobを確認。画像の目視・Site実画面の合格ではない。native smokeはLinux amd64・Mac amd64/arm64・Windows amd64、Linux/Windows arm64はcross-compileのみ。正式release v0.5.0は不変。 PR #109段階のCheck 43717357308は初回Browser.getVersionの10014ms timeoutで失敗し、cleanup開始後11477msに遅い応答を観測。同一SHAの失敗jobだけを上限1回再試行しattempt 2成功、他5jobは初回結果の再掲。初回はChrome 157.0.8103.50/Node v24.22.2/ImageVersion 20261111.196.1、再試行はChrome .78/Node v24.22.3/ImageVersion 20261111.82.6。事後Checkは初回と同じ報告version群で成功したが、runner状態の同一性やtimeout根因修復を証明しない。schema1/status0/records=[]で原因未捕捉、既存push lint continue-on-errorの63issuesも残る。PR Trial 43717357338は初回4 native/build成功、main限定readyはPRではskip。 従来の履歴: PR #108の公開JSON更新を09:20:51 UTCに統合。106,127 bytesの候補・main正本・公開rawの一致を確認した。配信JSONのcheckedAt 08:13:47 UTCは歴史snapshotで、現在の観測時刻ではない。 PR #108の公開JSON更新をmain 648c2852へ09:20:51 UTCに統合。統合後Check 43698811819は初回6/6job成功（最終job 09:27:15 UTC、run更新09:27:16 UTC）。Trial 43698811792は初回10/10job・6 ready成功（最終ready 09:41:09 UTC、run更新09:41:10 UTC）。6実ZIPの独立受入れはCI完了とは別に確認済み。資料変更の検証であり、新しい認証実装・根因修復・正式版収録・Site表示確認ではない。正式v0.5.0は不変。 従来の履歴: PR #106の公開JSON更新を04:49:25 UTCに統合し、94,600 bytesの候補・正本・公開rawの全文一致を確認。配信内容のcheckedAt 03:47:13 UTCは歴史snapshotであり、配信commitや現在の観測時刻とは別。 PR #106統合後Check 43678422746のattempt 1は旧未完TCP guardで失敗。非空lifecycle診断の上位CONNECT ENDにERR_ABORTED(-3)を観測したが、取消元・peer・child TCP結果・根因は不明。独立レビュー後、同一SHAの失敗jobのみ1回再実行しattempt 2のgo-checkは05:15:58 UTCに成功、他5jobは初回成功の再掲。再実行のschema1空診断は初回の観測を否定せず原因修復の証拠でもない。Trial 43678422724は初回全10job・6 ready成功（最終ready 05:04:54 UTC）、6実ZIPを検証済み。PR段階の初回Check起動timeoutとTrial Intel package 600.120秒timeout、それぞれの限定再実行も履歴として保持し、根因解消とはしない。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。 従来の履歴: PR #104の公開JSON更新を01:22 UTCに統合し、候補・正本・公開rawの全文一致を確認。統合後Checkは初回Socket失敗後の限定再実行で01:45:27 UTCに成功。Trialは初回全10job・6 ready成功、6実ZIPを検証。既存Site実画面はこの更新では未確認。更新経路の限定完了と、更新ごとの表示確認を区別する。 従来の確認: PR #102をmain 949bceb5へ統合し、20:16:38 UTC観測snapshot/19:58:08 UTC診断成果の正本・raw・候補全文一致、既存Siteの33工程と詳細・実測ガント・取得を確認済み。公開経路・実成果物の検証完了を22:21 UTCに確認。PR #102初回Check起動失敗と統合後Check初回TCP guard失敗を保持し、統合後Check初回失敗とTrial初回全10job/6 ready・6実ZIP検証を区別する。通常のJSON同期にSite再配備は不要。新しいモバイルQAは実施していない。 後続の同一SHA Check限定再実行は22:32:33 UTCに成功。工程の成果時刻はこの後続CI検証の終端であり、最初の公開到達時刻ではない。",
       "waitReason": "公開データ読取・更新経路の限定工程は完了。更新ごとの実装状況の照合と保守は継続。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。",
       "nextAction": "確定した実装・検証結果を33工程と根拠を保って同期し、通常PR・該当head CI・独立レビュー・main読戻しで検証する。既存Siteの表示確認は利用制約が解消するまで保留し、再取得や代替経路で迂回しない。通常のJSON更新にSite再配備は不要。",
       "dependencies": [],
@@ -1160,6 +1160,18 @@
         {
           "label": "PR #113事後Trial初回・6実ZIP",
           "url": "https://github.com/g-kari/devsecops-console/actions/runs/44302933824"
+        },
+        {
+          "label": "PR #114 統合後の限定受入れ",
+          "url": "https://github.com/g-kari/devsecops-console/pull/114"
+        },
+        {
+          "label": "PR #114事後Check初回成功",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/44322387691"
+        },
+        {
+          "label": "PR #114事後Trial初回・6 ready",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/44322387121"
         }
       ],
       "plannedStart": null,
@@ -1573,9 +1585,28 @@
           "url": "https://github.com/g-kari/devsecops-console/pull/113"
         }
       ]
+    },
+    {
+      "id": "PR114限定工程",
+      "title": "依存宣言21/24の資料同期",
+      "start": "2026-11-18T13:52:42Z",
+      "end": "2026-11-18T14:16:03Z",
+      "basis": "PR作成から通常mergeまでの観測期間であり連続作業時間ではない。R3/runtime/実ログインやSite実画面の完成を意味しない。",
+      "evidence": [
+        {
+          "label": "PR #114",
+          "url": "https://github.com/g-kari/devsecops-console/pull/114"
+        }
+      ]
     }
   ],
   "updates": [
+    {
+      "at": "2026-11-18T14:33:48Z",
+      "type": "統合後の限定受入れ",
+      "text": "PR #114は14:16:03 UTCにmain a58926bへ通常統合。事後Check 44322387691は6 job、Trial 44322387121は9 job・6 readyが同merge・attempt 1で成功し、最後のjobは14:33:48 UTCに完了。実browser ZIPの32ケース・10フロー・29 PNGの構造/hash、candidateと6 ready ZIPの実bytesを独立受入れ済み（限定PASS、P1/P2=0）。これはGitHub承認・visual・R3 runtimeの合格ではない。 PR時Checkの初回Browser.getVersion timeoutと1回限定再試行成功は保持。Node/Chrome版が異なるため制御された再現試験でも原因修復でもない。Intel nativeは対象外・未検証、Site実画面も未検証。 成果時刻は最後のjob完了時刻。独立レビューの正確な完了時刻はこの記録では未確定で、今回の照合時刻とは分ける。",
+      "url": "https://github.com/g-kari/devsecops-console/pull/114"
+    },
     {
       "at": "2026-11-18T13:46:58.860552Z",
       "type": "入力の限定検証",
