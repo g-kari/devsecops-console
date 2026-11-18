@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "project": "DevSecOps Console",
-  "checkedAt": "2026-11-18T11:55:53.134Z",
+  "checkedAt": "2026-11-18T13:49:17.652Z",
   "publishedSnapshotAt": "2026-11-13T20:28:00Z",
-  "lastSubstantiveProgressAt": "2026-11-18T11:54:58Z",
-  "lastSubstantiveProgressLabel": "固定した依存宣言の実bytesを照合し、3 root go.modと一段目24組のうち15組を既存go.sumの期待h1で受入れ。残る8組は取得timeout、1組は固定seedに期待hashなし。これは宣言資料の受入れであり、選択module graph・target import closure・完全source corpus・toolchain全体の認証ではない。 隔離runnerの前提をR2で独立レビュー。metadataによるmodule選択、認証済sourceの受入れ、target package loading、closure固定、compile-only、別の入口有効化レビューを分離した。Pythonの契約モデルは2正例・114負例を実行済みで、全ての模擬receiptが揃っても実行NO_GOを維持する。実runnerの隔離・資源上限・Go/SQLite実行の検証ではない。 Go compile/gofmt、D01–D03、37＋42＝79認可negativeは未実行で、実ログイン・allow/session/runtimeは未実装のまま。",
+  "lastSubstantiveProgressAt": "2026-11-18T13:46:58.860552Z",
+  "lastSubstantiveProgressLabel": "一段目24組の依存宣言について、新たに6組のgo.mod実bytesを固定mainのgo.sum期待h1と照合し、受入れは15/24から21/24へ増えた。残るsortutil/strutil v1.2.1の2組は読取timeoutで停止、x/sys v0.49.0は期待 /go.mod hashがなく未取得。これは宣言資料であり、MVS選択graph・target import closure・完全source corpus・toolchain認証・Go/SQLite実行ではない。",
   "lastCodeMergeAt": "2026-11-18T05:12:18Z",
-  "mainSha": "22c4008fd7c71dcd0d3993bc6423c5fa102e9d61",
+  "mainSha": "efcf63dab7bd2df47822431ee5249855e61c7198",
   "repository": "https://github.com/g-kari/devsecops-console",
   "scopeNote": "コード統合、各変更の検証、正式版収録、本番稼働を分ける。main SHA・PR一覧・CIはcheckedAt時点の観測値。成果時刻と公開JSONの配信commitは別。資料更新の統合・配信確認は対応するPRと作業記録で追跡する。 掲載PRはcheckedAt時点の歴史的観測であり、配信後の現在一覧を自動追跡した結果ではない。 各rowのlastCheckedAtと既存履歴の観測時刻を保持し、全33工程の再検証を意味しない。PR期間は観測された作成〜統合期間であり、連続実装労働時間ではない。",
-  "currentFocus": "K275は依存宣言15/24の限定受入れと隔離前提R2の文書・Pythonモデル検証まで。実行可能な隔離runnerと完全入力は未成立。 未成立のrunner所有・隔離、無通信と外部強制の資源上限、固定Go toolchainと入力corpusの認証を先に確認する。認証済metadataだけのmodule選択と、認証済sourceを読むtarget package loadingを分離し、不足入力を発見したら停止して別の限定取得・受入れへ戻す。closureとmissing-inputゼロを固定した後にcompile-onlyを検討し、runtime入口の有効化は別レビューとする。既存制限の緩和や無条件再試行はしない。 K305のブラウザーCI根因は未解明。Site実画面は未検証で、公開JSON一致を表示合格としない。今回の更新はK275/K309とmain/PR/CIの限定照合で、他31工程の再検証ではない。",
+  "currentFocus": "K275は依存宣言21/24の限定受入れ。隔離runner・完全入力・Go/SQLite実行は未成立。 残る宣言入力2組の取得失敗とx/sys v0.49.0の期待hash欠測を保持し、実runner所有・隔離・無通信・外部強制上限と固定toolchainの能力証拠を先に確立する。metadata選択、認証済sourceの受入れ、target package loading、closure固定、compile-only、別のruntime入口レビューという順序を維持する。不足や不明時は停止し、無条件再試行・制限緩和・事故環境のclean仮定はしない。 K305のブラウザーCI根因とSite実画面は未確認。今回の照合範囲はK275/K309とmain/PR/CIで、他31工程の再検証ではない。",
   "openPullRequests": [],
   "ci": {
     "status": "success",
-    "label": "PR #112を2026-11-18 05:12:18 UTCにmain 22c4008fへ通常統合。統合後Check 44242593703はattempt 1で全6 job成功（05:17:58 UTC）、Trial 44242593076はattempt 1で全9 job・6 ready成功（05:26:29 UTC）。6実配布ZIPのCRC・checksum・manifest/source・candidate内bytesを独立受入れ済み。公開JSONとmainの一致を確認したが、Site実画面の受入れではない。 Intel Mac native jobを対象外とし、Linux amd64・Windows amd64・Darwin arm64のnative検証を維持。Darwin amd64を含む6対象のcross-build配布は維持するが、Intel Mac native smoke/full raceは未検証。旧Intel package timeoutの2失敗は履歴に残り、原因修復とは扱わない。Release workflowの実行・tag作成・正式版公開はしていない。push lintの既存63 issuesはcontinue-on-errorで残る。 これらのCIはR3 harnessや79認可negativeを実行した結果ではない。",
-    "url": "https://github.com/g-kari/devsecops-console/actions/runs/44242593703",
-    "checkedAt": "2026-11-18T11:55:53.134Z"
+    "label": "PR #113を2026-11-18 12:20:08 UTCにmain efcf63daへ通常統合。事後Check 44302933916はBrowser.getVersion timeoutで初回失敗し、証拠保全後の同SHA failed-job限定1回再試行（attempt 2）で12:37:43 UTCに成功。原因修復とは扱わない。Trial 44302933824はattempt 1で全9 job・6 ready成功、candidateと6実配布ZIPを独立受入れ済み。公開2ファイルのmain/raw一致は確認済みだが、Site実画面の受入れではない。 Checkの既成功5 jobは元の時刻・stepsによる再掲で、新しい5回の実行ではない。push lintの63 issuesはcontinue-on-errorで残り、clean lintとはしない。Intel nativeは対象外のまま。",
+    "url": "https://github.com/g-kari/devsecops-console/actions/runs/44302933916",
+    "checkedAt": "2026-11-18T13:49:17.652Z"
   },
   "rows": [
     {
@@ -23,13 +23,13 @@
       "title": "Webログイン・役割制御",
       "phase": "共通認可",
       "status": "partial",
-      "owner": "依存宣言・隔離前提の限定検証は終了 / 実runnerと完全入力の成立確認が次工程",
-      "lastCheckedAt": "2026-11-18T11:55:53.134Z",
-      "lastProgressAt": "2026-11-18T11:54:58Z",
+      "owner": "依存宣言21/24の限定取得・独立照合は終了 / 実runnerと完全入力の成立確認が次工程",
+      "lastCheckedAt": "2026-11-18T13:49:17.652Z",
+      "lastProgressAt": "2026-11-18T13:46:58.860552Z",
       "activityAt": null,
-      "latestAchievement": "固定した依存宣言の実bytesを照合し、3 root go.modと一段目24組のうち15組を既存go.sumの期待h1で受入れ。残る8組は取得timeout、1組は固定seedに期待hashなし。これは宣言資料の受入れであり、選択module graph・target import closure・完全source corpus・toolchain全体の認証ではない。 隔離runnerの前提をR2で独立レビュー。metadataによるmodule選択、認証済sourceの受入れ、target package loading、closure固定、compile-only、別の入口有効化レビューを分離した。Pythonの契約モデルは2正例・114負例を実行済みで、全ての模擬receiptが揃っても実行NO_GOを維持する。実runnerの隔離・資源上限・Go/SQLite実行の検証ではない。 Go compile/gofmt、D01–D03、37＋42＝79認可negativeは未実行で、実ログイン・allow/session/runtimeは未実装のまま。 従来の成果: K275の未実行driver harnessをR3へ補正。ケース終了時のtimeoutが先行SQL/rollback/readback診断を上書きしないよう別欄へ分離し、独立静的レビューで指摘を解消。73件のmetadata/hash/text否定検査とPythonの結果保持モデル12組・4改変種別×8条件の32拒否を独立再現。Goのcompile/gofmt、SQLiteのD01–D03、元の79認可シナリオは未実行。実ログイン・allow/session/runtimeは未実装のまま。 従来の成果: K275のlocal-session ledger契約を文書設計として受入れ。6処理順序点と42追加negative/crash行を整理し、旧12条件・7状態・18遷移・37negativeを保持。42追加行・37旧行は未実行でtest passではない。LG01–LG09は全て未解消（LG09の独立レビュー部分のみ完了）。実装/API/schema/SQL migration/allow/SessionSnapshot/runtime/実provider接続はNO-GO。 従来の成果: K275のcurrent-status受入条件12項目、公開provider契約対応、7状態・18遷移・37否定シナリオのoffline設計を受入れ。設計の独立レビューは終了。実装・動的試験の合格ではなく、SessionSnapshot変換・runtimeはNO-GO。 公開sourceではrefresh対象のclient所有権・失効・期限・ban・pairwise subjectの対応を確認。37否定シナリオは静的な設計で、実行test passではない。 従来の実装成果: PR #89のpure認可契約に続き、PR #95のoffline ID token verifierをmain 3a36efcbへ統合。統合後Checkはattempt 1、Trialはattempt 2で成功し、6 ready・同一SHAの6成果物を確認。PR時Checkはfont guard失敗後のattempt 2、Trialはattempt 1成功。Linux/Windows arm64はcross-compileのみ、他4対象はnative smoke。UI・実機・署名/公証は未検証。",
+      "latestAchievement": "一段目24組の依存宣言について、新たに6組のgo.mod実bytesを固定mainのgo.sum期待h1と照合し、受入れは15/24から21/24へ増えた。残るsortutil/strutil v1.2.1の2組は読取timeoutで停止、x/sys v0.49.0は期待 /go.mod hashがなく未取得。これは宣言資料であり、MVS選択graph・target import closure・完全source corpus・toolchain認証・Go/SQLite実行ではない。 前工程では8組がtimeoutで15/24だった。今回はその8組だけを同じ公式proxy URLへ各1回、並列2・socket 20秒・応答64KiB・redirectなしで読み、6組を受入れ、2組は再びtimeoutとなった。初回記録は保持し、今回内の追加再試行・代替取得は行っていない。20秒はsocket上限で、全体wall上限ではない。timeoutはHTTP status/bodyなしで、拒否やupstream障害とは断定しない。 前工程の記録: 固定した依存宣言の実bytesを照合し、3 root go.modと一段目24組のうち15組を既存go.sumの期待h1で受入れ。残る8組は取得timeout、1組は固定seedに期待hashなし。これは宣言資料の受入れであり、選択module graph・target import closure・完全source corpus・toolchain全体の認証ではない。 隔離runnerの前提をR2で独立レビュー。metadataによるmodule選択、認証済sourceの受入れ、target package loading、closure固定、compile-only、別の入口有効化レビューを分離した。Pythonの契約モデルは2正例・114負例を実行済みで、全ての模擬receiptが揃っても実行NO_GOを維持する。実runnerの隔離・資源上限・Go/SQLite実行の検証ではない。 Go compile/gofmt、D01–D03、37＋42＝79認可negativeは未実行で、実ログイン・allow/session/runtimeは未実装のまま。 従来の成果: K275の未実行driver harnessをR3へ補正。ケース終了時のtimeoutが先行SQL/rollback/readback診断を上書きしないよう別欄へ分離し、独立静的レビューで指摘を解消。73件のmetadata/hash/text否定検査とPythonの結果保持モデル12組・4改変種別×8条件の32拒否を独立再現。Goのcompile/gofmt、SQLiteのD01–D03、元の79認可シナリオは未実行。実ログイン・allow/session/runtimeは未実装のまま。 従来の成果: K275のlocal-session ledger契約を文書設計として受入れ。6処理順序点と42追加negative/crash行を整理し、旧12条件・7状態・18遷移・37negativeを保持。42追加行・37旧行は未実行でtest passではない。LG01–LG09は全て未解消（LG09の独立レビュー部分のみ完了）。実装/API/schema/SQL migration/allow/SessionSnapshot/runtime/実provider接続はNO-GO。 従来の成果: K275のcurrent-status受入条件12項目、公開provider契約対応、7状態・18遷移・37否定シナリオのoffline設計を受入れ。設計の独立レビューは終了。実装・動的試験の合格ではなく、SessionSnapshot変換・runtimeはNO-GO。 公開sourceではrefresh対象のclient所有権・失効・期限・ban・pairwise subjectの対応を確認。37否定シナリオは静的な設計で、実行test passではない。 従来の実装成果: PR #89のpure認可契約に続き、PR #95のoffline ID token verifierをmain 3a36efcbへ統合。統合後Checkはattempt 1、Trialはattempt 2で成功し、6 ready・同一SHAの6成果物を確認。PR時Checkはfont guard失敗後のattempt 2、Trialはattempt 1成功。Linux/Windows arm64はcross-compileのみ、他4対象はnative smoke。UI・実機・署名/公証は未検証。",
       "waitReason": "実行可能な隔離環境・無通信・外部強制資源上限・toolchain/module全体の認証と選択graphは未成立。D01–D03は未実行で、LG02–LG04のowner排他・耐久性・不明時全入口停止を実証していない。LG01–LG09の本番受入れは未解消。 単一owner・同一権威DBは実証待ちの候補。保存不明時の全入口停止、DB巻戻し/複製/ABAと旧owner隔離、送信race、transportと作用先の原子性、clock/expiry/GC等は未確定。LG01–LG09未解消。 実装済みはpure認可契約とoffline ID token verifierまで。current-statusのallow-producing受入ロジックは未実装。全7状態で認可出力はなく、active:trueだけでsessionを発行しない。TTL・clock・source観測保証・永続fence・作用先などは未確定で、SessionSnapshot変換・runtimeはNO-GO。実provider・client登録・稼働deploymentの適合、実ログイン/session/HTTP境界は未検証。設計工程は終了し、次の実装工程は未割当。",
-      "nextAction": "未成立のrunner所有・隔離、無通信と外部強制の資源上限、固定Go toolchainと入力corpusの認証を先に確認する。認証済metadataだけのmodule選択と、認証済sourceを読むtarget package loadingを分離し、不足入力を発見したら停止して別の限定取得・受入れへ戻す。closureとmissing-inputゼロを固定した後にcompile-onlyを検討し、runtime入口の有効化は別レビューとする。既存制限の緩和や無条件再試行はしない。 本番認証・DB schema/migration・権限や永続アクセスは変更しない。",
+      "nextAction": "残る宣言入力2組の取得失敗とx/sys v0.49.0の期待hash欠測を保持し、実runner所有・隔離・無通信・外部強制上限と固定toolchainの能力証拠を先に確立する。metadata選択、認証済sourceの受入れ、target package loading、closure固定、compile-only、別のruntime入口レビューという順序を維持する。不足や不明時は停止し、無条件再試行・制限緩和・事故環境のclean仮定はしない。 本番認証・DB schema/migration・権限や永続アクセスは変更しない。",
       "dependencies": [],
       "evidence": [
         {
@@ -79,6 +79,10 @@
         {
           "label": "固定mainの依存hash seed（完全corpusではない）",
           "url": "https://github.com/g-kari/devsecops-console/blob/22c4008fd7c71dcd0d3993bc6423c5fa102e9d61/go.sum"
+        },
+        {
+          "label": "今回期待hashと照合した固定main go.sum",
+          "url": "https://github.com/g-kari/devsecops-console/blob/efcf63dab7bd2df47822431ee5249855e61c7198/go.sum"
         }
       ],
       "plannedStart": null,
@@ -961,10 +965,10 @@
       "phase": "公開資料",
       "status": "complete",
       "owner": "更新経路の限定工程完了 / 進捗同期は継続",
-      "lastCheckedAt": "2026-11-18T11:55:53.134Z",
-      "lastProgressAt": "2026-11-18T05:26:29Z",
+      "lastCheckedAt": "2026-11-18T13:49:17.652Z",
+      "lastProgressAt": "2026-11-18T12:41:56.814155Z",
       "activityAt": null,
-      "latestAchievement": "PR #112を2026-11-18 05:12:18 UTCにmain 22c4008fへ通常統合。統合後Check 44242593703はattempt 1で全6 job成功（05:17:58 UTC）、Trial 44242593076はattempt 1で全9 job・6 ready成功（05:26:29 UTC）。6実配布ZIPのCRC・checksum・manifest/source・candidate内bytesを独立受入れ済み。公開JSONとmainの一致を確認したが、Site実画面の受入れではない。 Intel Mac native jobを対象外とし、Linux amd64・Windows amd64・Darwin arm64のnative検証を維持。Darwin amd64を含む6対象のcross-build配布は維持するが、Intel Mac native smoke/full raceは未検証。旧Intel package timeoutの2失敗は履歴に残り、原因修復とは扱わない。Release workflowの実行・tag作成・正式版公開はしていない。push lintの既存63 issuesはcontinue-on-errorで残る。 従来の履歴: PR #109の公開資料2ファイルを13:31:03 UTCにmain 7b4a675bへ統合。候補・main・公開rawの全文一致を確認し、技術限定工程は13:53:33 UTCに終了。配信内容のcheckedAt 12:56:08 UTCは過去の観測snapshotであり、実公開commit・現在の照合時刻とは別。 PR #109統合後Check 43719405054はattempt 1で全6job成功（最終13:35:47 UTC）。Trial 43719405062はattempt 1で全10job・6 ready成功（最終13:50:51 UTC）。実Check artifactと6実配布ZIPは独立受入れ済み。32cases/10flows/29PNGのbytes・hash・寸法と、6ZIPのCRC・checksum・manifest/source・candidate内tar一致・配布補助4ファイルのGit blobを確認。画像の目視・Site実画面の合格ではない。native smokeはLinux amd64・Mac amd64/arm64・Windows amd64、Linux/Windows arm64はcross-compileのみ。正式release v0.5.0は不変。 PR #109段階のCheck 43717357308は初回Browser.getVersionの10014ms timeoutで失敗し、cleanup開始後11477msに遅い応答を観測。同一SHAの失敗jobだけを上限1回再試行しattempt 2成功、他5jobは初回結果の再掲。初回はChrome 157.0.8103.50/Node v24.22.2/ImageVersion 20261111.196.1、再試行はChrome .78/Node v24.22.3/ImageVersion 20261111.82.6。事後Checkは初回と同じ報告version群で成功したが、runner状態の同一性やtimeout根因修復を証明しない。schema1/status0/records=[]で原因未捕捉、既存push lint continue-on-errorの63issuesも残る。PR Trial 43717357338は初回4 native/build成功、main限定readyはPRではskip。 従来の履歴: PR #108の公開JSON更新を09:20:51 UTCに統合。106,127 bytesの候補・main正本・公開rawの一致を確認した。配信JSONのcheckedAt 08:13:47 UTCは歴史snapshotで、現在の観測時刻ではない。 PR #108の公開JSON更新をmain 648c2852へ09:20:51 UTCに統合。統合後Check 43698811819は初回6/6job成功（最終job 09:27:15 UTC、run更新09:27:16 UTC）。Trial 43698811792は初回10/10job・6 ready成功（最終ready 09:41:09 UTC、run更新09:41:10 UTC）。6実ZIPの独立受入れはCI完了とは別に確認済み。資料変更の検証であり、新しい認証実装・根因修復・正式版収録・Site表示確認ではない。正式v0.5.0は不変。 従来の履歴: PR #106の公開JSON更新を04:49:25 UTCに統合し、94,600 bytesの候補・正本・公開rawの全文一致を確認。配信内容のcheckedAt 03:47:13 UTCは歴史snapshotであり、配信commitや現在の観測時刻とは別。 PR #106統合後Check 43678422746のattempt 1は旧未完TCP guardで失敗。非空lifecycle診断の上位CONNECT ENDにERR_ABORTED(-3)を観測したが、取消元・peer・child TCP結果・根因は不明。独立レビュー後、同一SHAの失敗jobのみ1回再実行しattempt 2のgo-checkは05:15:58 UTCに成功、他5jobは初回成功の再掲。再実行のschema1空診断は初回の観測を否定せず原因修復の証拠でもない。Trial 43678422724は初回全10job・6 ready成功（最終ready 05:04:54 UTC）、6実ZIPを検証済み。PR段階の初回Check起動timeoutとTrial Intel package 600.120秒timeout、それぞれの限定再実行も履歴として保持し、根因解消とはしない。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。 従来の履歴: PR #104の公開JSON更新を01:22 UTCに統合し、候補・正本・公開rawの全文一致を確認。統合後Checkは初回Socket失敗後の限定再実行で01:45:27 UTCに成功。Trialは初回全10job・6 ready成功、6実ZIPを検証。既存Site実画面はこの更新では未確認。更新経路の限定完了と、更新ごとの表示確認を区別する。 従来の確認: PR #102をmain 949bceb5へ統合し、20:16:38 UTC観測snapshot/19:58:08 UTC診断成果の正本・raw・候補全文一致、既存Siteの33工程と詳細・実測ガント・取得を確認済み。公開経路・実成果物の検証完了を22:21 UTCに確認。PR #102初回Check起動失敗と統合後Check初回TCP guard失敗を保持し、統合後Check初回失敗とTrial初回全10job/6 ready・6実ZIP検証を区別する。通常のJSON同期にSite再配備は不要。新しいモバイルQAは実施していない。 後続の同一SHA Check限定再実行は22:32:33 UTCに成功。工程の成果時刻はこの後続CI検証の終端であり、最初の公開到達時刻ではない。",
+      "latestAchievement": "PR #113を2026-11-18 12:20:08 UTCにmain efcf63daへ通常統合。事後Check 44302933916はBrowser.getVersion timeoutで初回失敗し、証拠保全後の同SHA failed-job限定1回再試行（attempt 2）で12:37:43 UTCに成功。原因修復とは扱わない。Trial 44302933824はattempt 1で全9 job・6 ready成功、candidateと6実配布ZIPを独立受入れ済み。公開2ファイルのmain/raw一致は確認済みだが、Site実画面の受入れではない。 Check実artifactは32 cases/10 flows/29 PNGの構造・hash検証までで、visual reviewではない。 前工程の記録: PR #112を2026-11-18 05:12:18 UTCにmain 22c4008fへ通常統合。統合後Check 44242593703はattempt 1で全6 job成功（05:17:58 UTC）、Trial 44242593076はattempt 1で全9 job・6 ready成功（05:26:29 UTC）。6実配布ZIPのCRC・checksum・manifest/source・candidate内bytesを独立受入れ済み。公開JSONとmainの一致を確認したが、Site実画面の受入れではない。 Intel Mac native jobを対象外とし、Linux amd64・Windows amd64・Darwin arm64のnative検証を維持。Darwin amd64を含む6対象のcross-build配布は維持するが、Intel Mac native smoke/full raceは未検証。旧Intel package timeoutの2失敗は履歴に残り、原因修復とは扱わない。Release workflowの実行・tag作成・正式版公開はしていない。push lintの既存63 issuesはcontinue-on-errorで残る。 従来の履歴: PR #109の公開資料2ファイルを13:31:03 UTCにmain 7b4a675bへ統合。候補・main・公開rawの全文一致を確認し、技術限定工程は13:53:33 UTCに終了。配信内容のcheckedAt 12:56:08 UTCは過去の観測snapshotであり、実公開commit・現在の照合時刻とは別。 PR #109統合後Check 43719405054はattempt 1で全6job成功（最終13:35:47 UTC）。Trial 43719405062はattempt 1で全10job・6 ready成功（最終13:50:51 UTC）。実Check artifactと6実配布ZIPは独立受入れ済み。32cases/10flows/29PNGのbytes・hash・寸法と、6ZIPのCRC・checksum・manifest/source・candidate内tar一致・配布補助4ファイルのGit blobを確認。画像の目視・Site実画面の合格ではない。native smokeはLinux amd64・Mac amd64/arm64・Windows amd64、Linux/Windows arm64はcross-compileのみ。正式release v0.5.0は不変。 PR #109段階のCheck 43717357308は初回Browser.getVersionの10014ms timeoutで失敗し、cleanup開始後11477msに遅い応答を観測。同一SHAの失敗jobだけを上限1回再試行しattempt 2成功、他5jobは初回結果の再掲。初回はChrome 157.0.8103.50/Node v24.22.2/ImageVersion 20261111.196.1、再試行はChrome .78/Node v24.22.3/ImageVersion 20261111.82.6。事後Checkは初回と同じ報告version群で成功したが、runner状態の同一性やtimeout根因修復を証明しない。schema1/status0/records=[]で原因未捕捉、既存push lint continue-on-errorの63issuesも残る。PR Trial 43717357338は初回4 native/build成功、main限定readyはPRではskip。 従来の履歴: PR #108の公開JSON更新を09:20:51 UTCに統合。106,127 bytesの候補・main正本・公開rawの一致を確認した。配信JSONのcheckedAt 08:13:47 UTCは歴史snapshotで、現在の観測時刻ではない。 PR #108の公開JSON更新をmain 648c2852へ09:20:51 UTCに統合。統合後Check 43698811819は初回6/6job成功（最終job 09:27:15 UTC、run更新09:27:16 UTC）。Trial 43698811792は初回10/10job・6 ready成功（最終ready 09:41:09 UTC、run更新09:41:10 UTC）。6実ZIPの独立受入れはCI完了とは別に確認済み。資料変更の検証であり、新しい認証実装・根因修復・正式版収録・Site表示確認ではない。正式v0.5.0は不変。 従来の履歴: PR #106の公開JSON更新を04:49:25 UTCに統合し、94,600 bytesの候補・正本・公開rawの全文一致を確認。配信内容のcheckedAt 03:47:13 UTCは歴史snapshotであり、配信commitや現在の観測時刻とは別。 PR #106統合後Check 43678422746のattempt 1は旧未完TCP guardで失敗。非空lifecycle診断の上位CONNECT ENDにERR_ABORTED(-3)を観測したが、取消元・peer・child TCP結果・根因は不明。独立レビュー後、同一SHAの失敗jobのみ1回再実行しattempt 2のgo-checkは05:15:58 UTCに成功、他5jobは初回成功の再掲。再実行のschema1空診断は初回の観測を否定せず原因修復の証拠でもない。Trial 43678422724は初回全10job・6 ready成功（最終ready 05:04:54 UTC）、6実ZIPを検証済み。PR段階の初回Check起動timeoutとTrial Intel package 600.120秒timeout、それぞれの限定再実行も履歴として保持し、根因解消とはしない。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。 従来の履歴: PR #104の公開JSON更新を01:22 UTCに統合し、候補・正本・公開rawの全文一致を確認。統合後Checkは初回Socket失敗後の限定再実行で01:45:27 UTCに成功。Trialは初回全10job・6 ready成功、6実ZIPを検証。既存Site実画面はこの更新では未確認。更新経路の限定完了と、更新ごとの表示確認を区別する。 従来の確認: PR #102をmain 949bceb5へ統合し、20:16:38 UTC観測snapshot/19:58:08 UTC診断成果の正本・raw・候補全文一致、既存Siteの33工程と詳細・実測ガント・取得を確認済み。公開経路・実成果物の検証完了を22:21 UTCに確認。PR #102初回Check起動失敗と統合後Check初回TCP guard失敗を保持し、統合後Check初回失敗とTrial初回全10job/6 ready・6実ZIP検証を区別する。通常のJSON同期にSite再配備は不要。新しいモバイルQAは実施していない。 後続の同一SHA Check限定再実行は22:32:33 UTCに成功。工程の成果時刻はこの後続CI検証の終端であり、最初の公開到達時刻ではない。",
       "waitReason": "公開データ読取・更新経路の限定工程は完了。更新ごとの実装状況の照合と保守は継続。 既存Siteの実画面・操作確認は保留。06:46:50 UTCの直接GETは403だったが、応答header/bodyが保存されておらず、Site由来か環境側の制限かは未確定。Site停止・非公開とは断定しない。JSON配信の一致を表示合格としない。",
       "nextAction": "確定した実装・検証結果を33工程と根拠を保って同期し、通常PR・該当head CI・独立レビュー・main読戻しで検証する。既存Siteの表示確認は利用制約が解消するまで保留し、再取得や代替経路で迂回しない。通常のJSON更新にSite再配備は不要。",
       "dependencies": [],
@@ -1144,6 +1148,18 @@
         {
           "label": "PR #112配信正本",
           "url": "https://github.com/g-kari/devsecops-console/blob/22c4008fd7c71dcd0d3993bc6423c5fa102e9d61/docs/site-roadmap.json"
+        },
+        {
+          "label": "PR #113 資料同期",
+          "url": "https://github.com/g-kari/devsecops-console/pull/113"
+        },
+        {
+          "label": "PR #113事後Check限定再試行",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/44302933916"
+        },
+        {
+          "label": "PR #113事後Trial初回・6実ZIP",
+          "url": "https://github.com/g-kari/devsecops-console/actions/runs/44302933824"
         }
       ],
       "plannedStart": null,
@@ -1544,9 +1560,34 @@
           "url": "https://github.com/g-kari/devsecops-console/pull/112"
         }
       ]
+    },
+    {
+      "id": "PR113限定工程",
+      "title": "依存宣言・隔離runner契約の資料同期",
+      "start": "2026-11-18T11:59:28Z",
+      "end": "2026-11-18T12:20:08Z",
+      "basis": "PR作成から通常mergeまでの観測期間であり連続作業時間ではない。R3/runtime/実ログインやSite実画面の完成を意味しない。",
+      "evidence": [
+        {
+          "label": "PR #113",
+          "url": "https://github.com/g-kari/devsecops-console/pull/113"
+        }
+      ]
     }
   ],
   "updates": [
+    {
+      "at": "2026-11-18T13:46:58.860552Z",
+      "type": "入力の限定検証",
+      "text": "一段目24組の依存宣言について、新たに6組のgo.mod実bytesを固定mainのgo.sum期待h1と照合し、受入れは15/24から21/24へ増えた。残るsortutil/strutil v1.2.1の2組は読取timeoutで停止、x/sys v0.49.0は期待 /go.mod hashがなく未取得。これは宣言資料であり、MVS選択graph・target import closure・完全source corpus・toolchain認証・Go/SQLite実行ではない。 前工程では8組がtimeoutで15/24だった。今回はその8組だけを同じ公式proxy URLへ各1回、並列2・socket 20秒・応答64KiB・redirectなしで読み、6組を受入れ、2組は再びtimeoutとなった。初回記録は保持し、今回内の追加再試行・代替取得は行っていない。20秒はsocket上限で、全体wall上限ではない。timeoutはHTTP status/bodyなしで、拒否やupstream障害とは断定しない。",
+      "url": "https://github.com/g-kari/devsecops-console/blob/main/docs/web-driver-harness-status.md"
+    },
+    {
+      "at": "2026-11-18T12:41:56.814155Z",
+      "type": "統合後の限定受入れ",
+      "text": "PR #113を2026-11-18 12:20:08 UTCにmain efcf63daへ通常統合。事後Check 44302933916はBrowser.getVersion timeoutで初回失敗し、証拠保全後の同SHA failed-job限定1回再試行（attempt 2）で12:37:43 UTCに成功。原因修復とは扱わない。Trial 44302933824はattempt 1で全9 job・6 ready成功、candidateと6実配布ZIPを独立受入れ済み。公開2ファイルのmain/raw一致は確認済みだが、Site実画面の受入れではない。",
+      "url": "https://github.com/g-kari/devsecops-console/pull/113"
+    },
     {
       "at": "2026-11-18T11:54:58Z",
       "type": "設計・限定モデル検証",
