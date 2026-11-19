@@ -6,3 +6,9 @@ linters:
     - govet
     - staticcheck
     - unused
+
+issues:
+  # Do not cap the report: the default limits (50 per linter, 3 per same
+  # message) hid most findings and made the count look far smaller.
+  max-issues-per-linter: 0
+  max-same-issues: 0
