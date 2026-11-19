@@ -4,7 +4,7 @@ go 1.27.4
 
 require (
 	charm.land/bubbletea/v2 v2.1.2
-	github.com/charmbracelet/x/ansi v0.11.9
+	github.com/charmbracelet/x/ansi v0.11.10
 	github.com/mattn/go-isatty v0.0.24
 	github.com/slack-go/slack v0.36.0
 	github.com/yuin/goldmark/v2 v2.1.16
