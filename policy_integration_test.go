@@ -40,7 +40,7 @@ func TestFetchCompletenessAndCurrentExclusionProtectHistory(t *testing.T) {
 	for _, scenario := range []string{"excluded_during_fetch", "partial_specific_repo"} {
 		t.Run(scenario, func(t *testing.T) {
 			s := store.New()
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			target := config.Target{Owner: "org", Repo: "api"}
 			cfg := &config.Config{Targets: []config.Target{target}}
 			rec := &model.AlertRecord{Alert: model.Alert{Owner: "org", Repo: "api", Number: 1}, NotifiedAt: time.Now()}
@@ -65,7 +65,7 @@ func TestExcludedQueuedAndLateEvaluationsDoNotPublish(t *testing.T) {
 	for _, phase := range []string{"queued", "during"} {
 		t.Run(phase, func(t *testing.T) {
 			s := store.New()
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			cfg := &config.Config{Targets: []config.Target{{Owner: "org"}}, NotifyMinSeverity: "low"}
 			rec := &model.AlertRecord{Alert: model.Alert{Owner: "org", Repo: "api", Number: 1, Severity: model.SeverityCritical}, EvalStatus: model.EvalStatusPending, NotifiedAt: time.Now()}
 			s.SaveObserved(rec)
@@ -97,7 +97,7 @@ func TestExcludedQueuedAndLateEvaluationsDoNotPublish(t *testing.T) {
 
 func TestAutoEvaluationLimitDoesNotGetConsumedByExcludedRepos(t *testing.T) {
 	s := store.New()
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	cfg := &config.Config{Targets: []config.Target{{Owner: "org", Excludes: []string{"excluded"}}}, Evaluator: config.EvaluatorConfig{AutoEval: true, MaxEvalPerPoll: 1}}
 	for i, repo := range []string{"excluded", "api"} {
 		s.SaveObserved(&model.AlertRecord{Alert: model.Alert{Owner: "org", Repo: repo, Number: i + 1, Severity: model.SeverityCritical}, EvalStatus: model.EvalStatusPending, NotifiedAt: time.Now()})
@@ -114,7 +114,7 @@ func TestAutoEvaluationLimitDoesNotGetConsumedByExcludedRepos(t *testing.T) {
 
 func TestLegacyFetchWithoutCompletenessNeverInfersResolution(t *testing.T) {
 	s := store.New()
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	target := config.Target{Owner: "org", Repo: "api"}
 	row := &model.AlertRecord{Alert: model.Alert{Owner: "org", Repo: "api", Number: 1}, NotifiedAt: time.Now()}
 	s.SaveObserved(row)

@@ -16,7 +16,7 @@ func TestWebMonitoringDeniesUnconfiguredAndOverlappingExclusions(t *testing.T) {
 	for _, targets := range [][]config.Target{nil, {{Owner: "testorg", Repo: "testrepo"}, {Owner: "testorg", Excludes: []string{"testrepo"}}}} {
 		t.Run("policy", func(t *testing.T) {
 			srv, s, m := newTestServer(t)
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			srv.cfg.Targets = targets
 			saveAlert(s, 1, "pkg", model.SeverityHigh)
 			for _, action := range []string{"approve", "reject", "evaluate"} {
@@ -49,7 +49,7 @@ func TestManualEvaluationClaimsOnceAndRestoresStateWhenQueueFull(t *testing.T) {
 	for _, full := range []bool{false, true} {
 		t.Run("admission", func(t *testing.T) {
 			srv, s, _ := newTestServer(t)
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			saveAlert(s, 1, "pkg", model.SeverityHigh)
 			q := queue.New(1, 1)
 			defer q.Stop()
@@ -84,7 +84,7 @@ func TestSettingsDoesNotLabelUnconfiguredRepositoryAsMonitored(t *testing.T) {
 	for _, targets := range [][]config.Target{nil, {{Owner: "testorg", Repo: "different"}}} {
 		t.Run("unconfigured", func(t *testing.T) {
 			srv, s, _ := newTestServer(t)
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			srv.cfg.Targets = targets
 			saveAlert(s, 1, "pkg", model.SeverityHigh)
 			w := httptest.NewRecorder()
@@ -101,7 +101,7 @@ func TestExclusionSaveWaitCanBeCanceledWithoutChangingConfiguration(t *testing.T
 	for _, legacy := range []bool{false, true} {
 		t.Run("save", func(t *testing.T) {
 			srv, s, _ := newTestServer(t)
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			srv.cfg.Targets = []config.Target{{Owner: "testorg"}}
 			saveAlert(s, 1, "pkg", model.SeverityHigh)
 			entered, release := make(chan struct{}), make(chan struct{})

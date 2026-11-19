@@ -45,7 +45,7 @@ func (s *Store) CommitFeed(ctx context.Context, batch FeedBatch) error {
 	if err != nil {
 		return fmt.Errorf("フィード保存transaction開始失敗: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if err := saveFeedItemsTx(ctx, tx, batch.FeedURL, batch.Items, batch.FetchedAt, batch.Retention); err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (s *Store) SaveFeedItemsWithRetention(ctx context.Context, feedURL string, 
 	if err != nil {
 		return fmt.Errorf("フィード保存transaction開始失敗: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if err := saveFeedItemsTx(ctx, tx, feedURL, items, fetchedAt, retention); err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func (s *Store) ListFeedStatuses(ctx context.Context) ([]FeedStatus, error) {
 	if err != nil {
 		return nil, fmt.Errorf("フィード状態一覧取得失敗: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var statuses []FeedStatus
 	for rows.Next() {
 		var status FeedStatus
@@ -211,7 +211,7 @@ func (s *Store) ListFeedItems(ctx context.Context, limit int) ([]feed.Item, erro
 		var item feed.Item
 		var published *string
 		if err := rows.Scan(&id, &item.FeedURL, &item.ExternalID, &item.Title, &item.Link, &item.Summary, &published); err != nil {
-			rows.Close()
+			_ = rows.Close()
 			return nil, fmt.Errorf("RSS記事読込失敗: %w", err)
 		}
 		if published != nil {
@@ -221,7 +221,7 @@ func (s *Store) ListFeedItems(ctx context.Context, limit int) ([]feed.Item, erro
 		out = append(out, item)
 	}
 	if err := rows.Err(); err != nil {
-		rows.Close()
+		_ = rows.Close()
 		return nil, err
 	}
 	if err := rows.Close(); err != nil {
@@ -235,7 +235,7 @@ func (s *Store) ListFeedItems(ctx context.Context, limit int) ([]feed.Item, erro
 		for crows.Next() {
 			var c string
 			if err := crows.Scan(&c); err != nil {
-				crows.Close()
+				_ = crows.Close()
 				return nil, err
 			}
 			out[i].CVEIDs = append(out[i].CVEIDs, c)

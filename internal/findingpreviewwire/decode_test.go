@@ -170,9 +170,9 @@ func TestW05SemanticRejection(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			m := fixture()
 			mutate(m)
-			reject(t, encoded(t, m))
+			_ = reject(t, encoded(t, m))
 			m["finding"].(map[string]any)["category"] = "secret"
-			reject(t, encoded(t, m))
+			_ = reject(t, encoded(t, m))
 		})
 	}
 	for _, n := range []json.Number{"-0.1", "1.1", "1.00000000000000000000000000000000001", "1e999999", "1e-999999", "NaN", "Infinity"} {
@@ -180,12 +180,12 @@ func TestW05SemanticRejection(t *testing.T) {
 		e := addEvidence(m, "epss")
 		e["probability"] = 0
 		b := strings.Replace(string(encoded(t, m)), `"probability":0`, `"probability":`+string(n), 1)
-		reject(t, []byte(b))
+		_ = reject(t, []byte(b))
 	}
 	for _, s := range []string{"", "0001-01-01T00:00:00Z", "0000-01-01T00:00:00Z", "2026-11-08T0:00:00Z", "2026-11-08T00:00:00", "2026-11-08T00:00:00+24:00", "2026-11-08T00:00:00+00:60", "2026-11-08T00:00:00,1Z", "2026-11-08T00:00:00.1234567890Z", "9999-12-31T23:59:59-23:59"} {
 		m := fixture()
 		m["as_of"] = s
-		reject(t, encoded(t, m))
+		_ = reject(t, encoded(t, m))
 	}
 }
 func TestW06StructuralFailClosedAndNoPayloadInErrors(t *testing.T) {
@@ -212,29 +212,29 @@ func TestW06StructuralFailClosedAndNoPayloadInErrors(t *testing.T) {
 			target = m[path].(map[string]any)
 		}
 		target["raw_ref"] = secret
-		reject(t, encoded(t, m))
+		_ = reject(t, encoded(t, m))
 	}
 	base := string(encoded(t, fixture()))
 	cases := []string{"", "[]", "null", base + " {}", base + "x", `{"schema_version":"x","schema_version":"y"}`, `{"id":"x","\u0069d":"y"}`, `{"a":{"b":1,"b":2}}`, strings.Replace(base, `"finding":{`, `"finding":{"id":"duplicate",`, 1), strings.Replace(base, `"id":"asset-a"`, `"ID":"asset-a"`, 1), strings.Replace(base, `"id":"asset-a"`, `"id":null`, 1), strings.Replace(base, `"id":"asset-a"`, `"id":123`, 1), strings.Replace(base, `"id":"asset-a"`, `"id":[]`, 1), strings.Replace(base, `"id":"asset-a"`, `"id":"\ud800"`, 1), strings.Replace(base, `"id":"asset-a"`, `"id":"\udc00"`, 1)}
 	for _, b := range cases {
-		reject(t, []byte(b))
+		_ = reject(t, []byte(b))
 	}
-	reject(t, append([]byte(base), 0xff))
+	_ = reject(t, append([]byte(base), 0xff))
 	for _, field := range []string{"schema_version", "as_of", "finding", "asset", "provenance", "enrichment"} {
 		m := fixture()
 		m[field] = nil
-		reject(t, encoded(t, m))
+		_ = reject(t, encoded(t, m))
 	}
 	for _, field := range []string{"probability", "percentile", "reported_fresh", "version", "run_id", "published_at", "observed_at"} {
 		for _, bad := range []any{nil, []any{}, map[string]any{}} {
 			m := fixture()
 			addEvidence(m, "epss")[field] = bad
-			reject(t, encoded(t, m))
+			_ = reject(t, encoded(t, m))
 		}
 	}
 	m := fixture()
 	addEvidence(m, "epss")["probability"] = "0"
-	reject(t, encoded(t, m))
+	_ = reject(t, encoded(t, m))
 }
 func TestW07ExactResourceBounds(t *testing.T) {
 	b := encoded(t, fixture())
@@ -253,7 +253,7 @@ func TestW07ExactResourceBounds(t *testing.T) {
 		if depth == MaxDepth && e != nil || depth > MaxDepth && e != Error("depth") {
 			t.Fatalf("depth %d got %v", depth, e)
 		}
-		reject(t, []byte(raw)) // Parser depth acceptance does not bypass the closed schema.
+		_ = reject(t, []byte(raw)) // Parser depth acceptance does not bypass the closed schema.
 	}
 	for _, c := range []struct {
 		field string
@@ -269,7 +269,7 @@ func TestW07ExactResourceBounds(t *testing.T) {
 			if extra == 0 {
 				accept(t, m)
 			} else {
-				reject(t, encoded(t, m))
+				_ = reject(t, encoded(t, m))
 			}
 		}
 	}
@@ -277,17 +277,17 @@ func TestW07ExactResourceBounds(t *testing.T) {
 	m["finding"].(map[string]any)["vulnerability_id"] = "CVE-2099-" + strings.Repeat("1", 55)
 	accept(t, m)
 	m["finding"].(map[string]any)["vulnerability_id"] = "CVE-2099-" + strings.Repeat("1", 56)
-	reject(t, encoded(t, m))
+	_ = reject(t, encoded(t, m))
 	for _, s := range []string{"", "  ", "a\x00b", "a\nb", "a\u007fb"} {
 		m := fixture()
 		m["finding"].(map[string]any)["id"] = s
-		reject(t, encoded(t, m))
+		_ = reject(t, encoded(t, m))
 	}
 	m = fixture()
 	m["finding"].(map[string]any)["id"] = strings.Repeat("界", 85) + "x"
 	accept(t, m)
 	m["finding"].(map[string]any)["id"] = strings.Repeat("界", 86)
-	reject(t, encoded(t, m))
+	_ = reject(t, encoded(t, m))
 }
 func TestW08DeterministicNonSharedContextOnly(t *testing.T) {
 	m := fixture()
@@ -307,7 +307,7 @@ func TestW08DeterministicNonSharedContextOnly(t *testing.T) {
 	if !reflect.DeepEqual(b, accept(t, m)) {
 		t.Fatal("shared output")
 	}
-	Decode(raw)
+	_, _ = Decode(raw)
 	if !reflect.DeepEqual(raw, before) {
 		t.Fatal("input mutated")
 	}

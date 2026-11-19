@@ -12,7 +12,7 @@ import (
 
 func TestPendingPolicySelectionFiltersBeforeLimitAndUsesLightweightFields(t *testing.T) {
 	s := New()
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	for i, input := range []struct {
 		owner, repo string
 		severity    model.Severity

@@ -15,7 +15,7 @@ func TestExcludedActionsDoNotMutateOrSearch(t *testing.T) {
 	for _, action := range []string{"approve", "reject", "merge"} {
 		t.Run(action, func(t *testing.T) {
 			s := store.New()
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			cfg := &config.Config{Targets: []config.Target{{Owner: "org", Excludes: []string{"api"}}}}
 			m := New(cfg, s, &mockGHClient{prErr: errors.New("fixture: must not search")})
 			rec := saveRecordWithPR(s, 1, "pkg", "org", "api", 0)
@@ -52,7 +52,7 @@ func (c *guardedSearchClient) FindDependabotPR(context.Context, string, string, 
 
 func TestApproveHoldsSharedPolicyThroughPRSearchWithoutReentering(t *testing.T) {
 	s := store.New()
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	cfg := &config.Config{Targets: []config.Target{{Owner: "org"}}}
 	client := &guardedSearchClient{entered: make(chan struct{}), release: make(chan struct{})}
 	m := New(cfg, s, client)

@@ -94,7 +94,7 @@ func TestA02EveryNewFieldRequiredAndTyped(t *testing.T) {
 							obj[key] = map[string]any{}
 						}
 					}
-					assessmentReject(t, encoded(t, m))
+					_ = assessmentReject(t, encoded(t, m))
 				})
 			}
 		}
@@ -164,7 +164,7 @@ func TestA04EveryIdentityBindingAndNoReuse(t *testing.T) {
 		case "advisory-space":
 			assessmentObject(m)["advisory_key"] = "cve:CVE-2099-0001 "
 		}
-		assessmentReject(t, encoded(t, m))
+		_ = assessmentReject(t, encoded(t, m))
 	}
 }
 func TestA05ExpiryBoundaryAndStrictClocks(t *testing.T) {
@@ -179,7 +179,7 @@ func TestA05ExpiryBoundaryAndStrictClocks(t *testing.T) {
 		for _, bad := range []string{"", "0001-01-01T00:00:00Z", "2026-11-07T0:00:00Z", "2026-11-07T00:00:00,1Z", "2026-11-07T00:00:00+24:00", "2026-11-07T00:00:00+00:60", "2026-11-07T00:00:00.1234567891Z", "not-time", "10000-01-01T00:00:00Z"} {
 			m := assessmentFixture()
 			assessmentEvidence(m)[key] = bad
-			assessmentReject(t, encoded(t, m))
+			_ = assessmentReject(t, encoded(t, m))
 		}
 	}
 	for _, c := range []struct{ observed, expires string }{{"2026-11-08T00:00:00.000000001Z", "2026-11-09T00:00:00Z"}, {"2026-11-07T00:00:00Z", "2026-11-07T00:00:00Z"}, {"2026-11-07T00:00:00Z", "2026-11-06T00:00:00Z"}} {
@@ -267,7 +267,7 @@ func TestA08UnsupportedStillValidatesAllStructure(t *testing.T) {
 			case "enum":
 				assessmentObject(m)["reachability"] = "affected"
 			}
-			assessmentReject(t, encoded(t, m))
+			_ = assessmentReject(t, encoded(t, m))
 		}
 	}
 }
@@ -285,7 +285,7 @@ func TestA09ForbiddenExtensionsAtEveryLevel(t *testing.T) {
 				obj = m[level].(map[string]any)
 			}
 			obj[key] = "sentinel-private-reference"
-			assessmentReject(t, encoded(t, m))
+			_ = assessmentReject(t, encoded(t, m))
 		}
 	}
 	for _, level := range []string{"assessment", "evidence"} {
@@ -295,25 +295,25 @@ func TestA09ForbiddenExtensionsAtEveryLevel(t *testing.T) {
 		} else {
 			assessmentObject(m)[level] = []any{assessmentEvidence(m)}
 		}
-		assessmentReject(t, encoded(t, m))
+		_ = assessmentReject(t, encoded(t, m))
 	}
 }
 func TestA10VersionIsolation(t *testing.T) {
 	b := encoded(t, assessmentFixture())
-	reject(t, b)
-	profileReject(t, b)
+	_ = reject(t, b)
+	_ = profileReject(t, b)
 	for _, version := range []string{SchemaVersion, ProfileSchemaVersion, "finding-preview-assessment-core-v0.2"} {
 		m := assessmentFixture()
 		m["schema_version"] = version
-		assessmentReject(t, encoded(t, m))
+		_ = assessmentReject(t, encoded(t, m))
 	}
-	assessmentReject(t, encoded(t, fixture()))
-	assessmentReject(t, encoded(t, profileFixture()))
+	_ = assessmentReject(t, encoded(t, fixture()))
+	_ = assessmentReject(t, encoded(t, profileFixture()))
 	m := assessmentFixture()
 	m["schema_version"] = SchemaVersion
-	reject(t, encoded(t, m))
+	_ = reject(t, encoded(t, m))
 	m["schema_version"] = ProfileSchemaVersion
-	profileReject(t, encoded(t, m))
+	_ = profileReject(t, encoded(t, m))
 	sameAdapter(t, fixture(), direct())
 	profileSame(t, profileFixture(), profileDirect())
 }
@@ -366,16 +366,16 @@ func TestA12PrivacyBoundsAndIsolation(t *testing.T) {
 		strings.Replace(base, `"claim-a"`, `"\u0000"`, 1),
 		base + " true", `[]`, `null`, strings.Repeat(" ", MaxBytes+1),
 	} {
-		assessmentReject(t, []byte(raw))
+		_ = assessmentReject(t, []byte(raw))
 	}
-	assessmentReject(t, append([]byte(base), 0xff))
+	_ = assessmentReject(t, append([]byte(base), 0xff))
 	m := assessmentFixture()
 	var deep any = "sentinel-secret"
 	for i := 0; i < MaxDepth; i++ {
 		deep = map[string]any{"x": deep}
 	}
 	m["extra"] = deep
-	assessmentReject(t, encoded(t, m))
+	_ = assessmentReject(t, encoded(t, m))
 	for _, group := range []string{"assessment", "evidence"} {
 		keys := []string{"profile_id", "repo", "advisory_key"}
 		if group == "evidence" {
@@ -407,7 +407,7 @@ func TestA12PrivacyBoundsAndIsolation(t *testing.T) {
 	if _, err := DecodeAssessment(b); err != nil {
 		t.Fatal("inclusive size rejected")
 	}
-	assessmentReject(t, append(b, ' '))
+	_ = assessmentReject(t, append(b, ' '))
 	r := assessmentSame(t, assessmentFixture(), assessmentDirect())
 	r.InputSnapshot.Assessment.Evidence[0].ID = "mutated"
 	r.InputSnapshot.Assessment.Facts["invented"] = "yes"
@@ -425,7 +425,7 @@ func FuzzAssessmentDecode(f *testing.F) {
 	f.Fuzz(func(t *testing.T, b []byte) {
 		r, err := DecodeAssessment(b)
 		if err != nil {
-			assessmentReject(t, b)
+			_ = assessmentReject(t, b)
 			return
 		}
 		if !r.PreviewOnly || r.ScoreResult == nil && r.AdapterState != "unsupported" {

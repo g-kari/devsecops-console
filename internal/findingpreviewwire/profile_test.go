@@ -102,7 +102,7 @@ func TestR03ExactVocabularyAndRequiredFields(t *testing.T) {
 			for _, v := range []any{"typo", "UNKNOWN", "unknown ", " customer", 1, true, map[string]any{}, []any{}} {
 				m := profileFixture()
 				m["profile"].(map[string]any)[c.key] = v
-				profileReject(t, encoded(t, m))
+				_ = profileReject(t, encoded(t, m))
 			}
 		})
 	}
@@ -118,7 +118,7 @@ func TestR03ExactVocabularyAndRequiredFields(t *testing.T) {
 	for _, obj := range []string{"profile", "binding"} {
 		m := profileFixture()
 		delete(m, obj)
-		profileReject(t, encoded(t, m))
+		_ = profileReject(t, encoded(t, m))
 	}
 }
 func TestR04CanonicalIntegerBoundaries(t *testing.T) {
@@ -131,7 +131,7 @@ func TestR04CanonicalIntegerBoundaries(t *testing.T) {
 	}
 	for _, n := range []string{`-1`, `-0`, `2147483648`, `1.5`, `"1"`, `1e2`, `0e0`, `1.0`, `+1`, `01`, `true`, `1e99999999999999999999999`, strings.Repeat("9", 256)} {
 		raw := strings.Replace(string(encoded(t, profileFixture())), `"max_outage_minutes":60`, `"max_outage_minutes":`+n, 1)
-		profileReject(t, []byte(raw))
+		_ = profileReject(t, []byte(raw))
 	}
 }
 func TestR05AllBindingsMustMatch(t *testing.T) {
@@ -145,14 +145,14 @@ func TestR05AllBindingsMustMatch(t *testing.T) {
 	m := profileFixture()
 	m["finding"].(map[string]any)["asset_id"] = "asset-b"
 	m["asset"].(map[string]any)["id"] = "asset-b"
-	profileReject(t, encoded(t, m))
+	_ = profileReject(t, encoded(t, m))
 	m = profileFixture()
 	m["profile"].(map[string]any)["repo"] = "different/repo"
-	profileReject(t, encoded(t, m))
+	_ = profileReject(t, encoded(t, m))
 	for _, key := range []string{"id", "repo"} {
 		m := profileFixture()
 		m["profile"].(map[string]any)[key] = " "
-		profileReject(t, encoded(t, m))
+		_ = profileReject(t, encoded(t, m))
 	}
 }
 func TestR06UnsupportedOnlyAfterFullValidation(t *testing.T) {
@@ -171,30 +171,30 @@ func TestR06UnsupportedOnlyAfterFullValidation(t *testing.T) {
 			t.Fatal("unsupported gained score")
 		}
 		m["profile"].(map[string]any)["exposure"] = "invalid"
-		profileReject(t, encoded(t, m))
+		_ = profileReject(t, encoded(t, m))
 		m["profile"].(map[string]any)["exposure"] = "internet"
 		m["binding"].(map[string]any)["profile_id"] = "other"
-		profileReject(t, encoded(t, m))
+		_ = profileReject(t, encoded(t, m))
 		m["binding"].(map[string]any)["profile_id"] = "profile-a"
 		addEvidence(m, "epss")["probability"] = -1
-		profileReject(t, encoded(t, m))
+		_ = profileReject(t, encoded(t, m))
 	}
 }
 func TestR07BaseContractRemainsClosed(t *testing.T) {
 	m := profileFixture()
-	reject(t, encoded(t, m))
+	_ = reject(t, encoded(t, m))
 	m["schema_version"] = SchemaVersion
-	reject(t, encoded(t, m))
-	profileReject(t, encoded(t, m))
+	_ = reject(t, encoded(t, m))
+	_ = profileReject(t, encoded(t, m))
 	for _, key := range []string{"profile", "binding"} {
 		m := fixture()
 		m[key] = profileFixture()[key]
-		reject(t, encoded(t, m))
+		_ = reject(t, encoded(t, m))
 	}
 	m = fixture()
 	m["schema_version"] = ProfileSchemaVersion
-	reject(t, encoded(t, m))
-	profileReject(t, encoded(t, m))
+	_ = reject(t, encoded(t, m))
+	_ = profileReject(t, encoded(t, m))
 	sameAdapter(t, fixture(), direct())
 }
 func TestR08NoContextInference(t *testing.T) {
@@ -271,18 +271,18 @@ func TestR10StructurePrivacyAndBounds(t *testing.T) {
 		for key := range profileFixture()[obj].(map[string]any) {
 			m := profileFixture()
 			m[obj].(map[string]any)[key] = nil
-			profileReject(t, encoded(t, m))
+			_ = profileReject(t, encoded(t, m))
 			m = profileFixture()
 			target := m[obj].(map[string]any)
 			value := target[key]
 			delete(target, key)
 			target[strings.ToUpper(key)] = value
-			profileReject(t, encoded(t, m))
+			_ = profileReject(t, encoded(t, m))
 		}
 		for _, bad := range []any{nil, []any{}, 1, "text"} {
 			m := profileFixture()
 			m[obj] = bad
-			profileReject(t, encoded(t, m))
+			_ = profileReject(t, encoded(t, m))
 		}
 		for _, dupe := range []string{`"repo":"other",`, `"\u0072epo":"other",`} {
 			b := strings.Replace(string(encoded(t, profileFixture())), `"`+obj+`":{`, `"`+obj+`":{`+dupe, 1)
@@ -294,7 +294,7 @@ func TestR10StructurePrivacyAndBounds(t *testing.T) {
 	for _, key := range []string{"assessment", "cvss", "raw_ref", "secret"} {
 		m := profileFixture()
 		m[key] = sentinel
-		profileReject(t, encoded(t, m))
+		_ = profileReject(t, encoded(t, m))
 	}
 	for _, obj := range []string{"profile", "binding"} {
 		for key, value := range profileFixture()[obj].(map[string]any) {
@@ -332,7 +332,7 @@ func TestR10StructurePrivacyAndBounds(t *testing.T) {
 		m := profileFixture()
 		key := "repo"
 		m[obj].(map[string]any)[key] = "bad\x00"
-		profileReject(t, encoded(t, m))
+		_ = profileReject(t, encoded(t, m))
 	}
 	b := encoded(t, profileFixture())
 	padded := append(append([]byte{}, b...), []byte(strings.Repeat(" ", MaxBytes-len(b)))...)
@@ -347,7 +347,7 @@ func TestR10StructurePrivacyAndBounds(t *testing.T) {
 		t.Fatal("depth limit weakened")
 	}
 	for _, raw := range [][]byte{append(append([]byte{}, b...), 0xff), append(append([]byte{}, b...), []byte(" {}")...), []byte(`[]`), []byte(`{"profile":"\ud800"}`)} {
-		profileReject(t, raw)
+		_ = profileReject(t, raw)
 	}
 }
 func TestR11DeterministicNonSharedResults(t *testing.T) {
@@ -390,7 +390,7 @@ func FuzzR12ProfileFixedDiagnostics(f *testing.F) {
 	f.Fuzz(func(t *testing.T, b []byte) {
 		r, e := DecodeProfile(b)
 		if e != nil {
-			profileReject(t, b)
+			_ = profileReject(t, b)
 			if strings.Contains(fmt.Sprint(r), "PRIVATE_SENTINEL") {
 				t.Fatal("partial payload")
 			}

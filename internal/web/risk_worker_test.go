@@ -16,7 +16,7 @@ import (
 
 func TestRiskSettingsSnapshotDetachedAndGuarded(t *testing.T) {
 	srv, s, _ := newTestServer(t)
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	srv.cfg.Targets = []config.Target{{Owner: "org", Excludes: []string{"private"}}}
 	source := riskSettingsSource{server: srv}
 	snapshot, err := source.Snapshot()
@@ -37,7 +37,7 @@ func TestRiskSettingsSnapshotDetachedAndGuarded(t *testing.T) {
 
 func TestRiskRecalculationConnected(t *testing.T) {
 	srv, s, _ := newTestServer(t)
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	srv.cfg.Targets = []config.Target{{Owner: "org"}}
 	s.SaveObserved(&model.AlertRecord{Alert: model.Alert{Owner: "org", Repo: "api", Number: 1, CVEID: "CVE-2026-5555"}, NotifiedAt: time.Now()})
 	if err := srv.RecalculateRisks(context.Background()); err != nil {
@@ -53,7 +53,7 @@ func TestLegacyMonitoringUpdatesInvalidateRiskGeneration(t *testing.T) {
 	for _, action := range []string{"add_target", "delete_target", "add_exclusion", "delete_exclusion"} {
 		t.Run(action, func(t *testing.T) {
 			srv, s, _ := newTestServer(t)
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			srv.cfg.Targets = []config.Target{{Owner: "org", Excludes: []string{"old"}}}
 			source := riskSettingsSource{server: srv}
 			revision := srv.cfg.ConfigRevision

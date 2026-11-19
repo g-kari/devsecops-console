@@ -59,7 +59,7 @@ func TestRefreshAttemptReadbackIsReadOnlyAndPreservesLastGoodEvidence(t *testing
 	if _, err := s.db.Exec("PRAGMA query_only=ON"); err != nil {
 		t.Fatal(err)
 	}
-	readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "running", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "running", false)
 	after, err := s.GetFindingDetail(ctx, c.Attempt.Targets[0].FindingID)
 	if err != nil || !reflect.DeepEqual(before, after) {
 		t.Fatalf("last-good evidence changed: %v", err)
@@ -74,12 +74,12 @@ func TestRefreshAttemptReadbackDoesNotSubstituteAnotherRunOrIdentity(t *testing.
 	}
 	other := c.Attempt
 	other.RunID = "10000000-0000-4000-8000-000000001111"
-	readAttemptWithoutWrites(t, s, ctx, other, nil, "missing", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, other, nil, "missing", false)
 	if _, err := s.BeginSecurityEnrichmentRefresh(ctx, other); err != nil {
 		t.Fatal(err)
 	}
-	readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "running", false)
-	readAttemptWithoutWrites(t, s, ctx, other, nil, "running", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "running", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, other, nil, "running", false)
 	for _, change := range []string{"source", "scope", "start", "revision", "target-id", "cve", "duplicate"} {
 		t.Run(change, func(t *testing.T) {
 			a := c.Attempt
@@ -105,18 +105,18 @@ func TestRefreshAttemptReadbackDoesNotSubstituteAnotherRunOrIdentity(t *testing.
 			case "duplicate":
 				a.Targets = append(a.Targets, a.Targets[0])
 			}
-			readAttemptWithoutWrites(t, s, ctx, a, nil, "unknown", true)
+			_ = readAttemptWithoutWrites(t, s, ctx, a, nil, "unknown", true)
 		})
 	}
 	zone := time.FixedZone("equivalent", -8*60*60)
 	equivalent := c.Attempt
 	equivalent.StartedAt = equivalent.StartedAt.In(zone)
-	readAttemptWithoutWrites(t, s, ctx, equivalent, nil, "running", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, equivalent, nil, "running", false)
 	// This is a historical reservation binding, not a new target scan.
 	if _, err := s.db.Exec("UPDATE findings SET body_json=json_set(body_json,'$.title','later mutation')"); err != nil {
 		t.Fatal(err)
 	}
-	readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "running", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "running", false)
 }
 
 func TestRefreshAttemptReadbackRequiresExactFailureAndNeverReturnsSuccess(t *testing.T) {
@@ -129,14 +129,14 @@ func TestRefreshAttemptReadbackRequiresExactFailureAndNeverReturnsSuccess(t *tes
 		t.Fatal(err)
 	}
 	expected := &SecurityEnrichmentRefreshFailure{Code: "fetch_failed", FinishedAt: c.FinishedAt}
-	readAttemptWithoutWrites(t, s, ctx, c.Attempt, expected, "failed", false)
-	readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "unknown", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, expected, "failed", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "unknown", false)
 	for _, f := range []*SecurityEnrichmentRefreshFailure{
 		{Code: "parse_failed", FinishedAt: c.FinishedAt},
 		{Code: "fetch_failed", FinishedAt: c.FinishedAt.Add(time.Nanosecond)},
 		{Code: "fetch_failed", FinishedAt: c.FinishedAt.Add(-time.Nanosecond)},
 	} {
-		readAttemptWithoutWrites(t, s, ctx, c.Attempt, f, "unknown", true)
+		_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, f, "unknown", true)
 	}
 	c.Attempt.RunID = "10000000-0000-4000-8000-000000001121"
 	if _, err := s.BeginSecurityEnrichmentRefresh(ctx, c.Attempt); err != nil {
@@ -145,8 +145,8 @@ func TestRefreshAttemptReadbackRequiresExactFailureAndNeverReturnsSuccess(t *tes
 	if _, err := s.CompleteSecurityEnrichmentRefresh(ctx, c); err != nil {
 		t.Fatal(err)
 	}
-	readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "unknown", false)
-	readAttemptWithoutWrites(t, s, ctx, c.Attempt, expected, "unknown", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "unknown", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, expected, "unknown", false)
 	full, err := s.ReconcileSecurityEnrichmentRefresh(ctx, c)
 	if err != nil || full.State != "success" || full.Receipt == "" {
 		t.Fatalf("full-completion verification lost=%+v err=%v", full, err)
@@ -191,7 +191,7 @@ func TestRefreshAttemptReadbackRejectsEvidenceOrphansInEveryNonSuccessState(t *t
 					t.Fatal(err)
 				}
 				insertAttemptOrphan(t, s, c.Attempt.RunID, kind, c)
-				readAttemptWithoutWrites(t, s, ctx, c.Attempt, failure, "unknown", true)
+				_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, failure, "unknown", true)
 			})
 		}
 	}
@@ -209,7 +209,7 @@ func TestRefreshAttemptReadbackRejectsEvidenceOrphansInEveryNonSuccessState(t *t
 	if _, err := s.db.Exec("DELETE FROM ingest_runs WHERE id=?", c.Attempt.RunID); err != nil {
 		t.Fatal(err)
 	}
-	readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "unknown", true)
+	_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "unknown", true)
 }
 
 func TestRefreshAttemptReadbackRejectsCorruptAndOversizeStoredRows(t *testing.T) {
@@ -329,7 +329,7 @@ func TestRefreshAttemptReadbackRejectsWrongUUIDBodyAndMalformedFailureLifecycle(
 			if _, err := s.db.Exec("UPDATE ingest_runs SET finished_at=?,error=?,cursor=?,coverage=?,body_json=? WHERE id=?", finished, run.Error, run.Cursor, run.Coverage, string(encoded), c.Attempt.RunID); err != nil {
 				t.Fatal(err)
 			}
-			readAttemptWithoutWrites(t, s, ctx, c.Attempt, &SecurityEnrichmentRefreshFailure{Code: "fetch_failed", FinishedAt: c.FinishedAt}, "unknown", true)
+			_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, &SecurityEnrichmentRefreshFailure{Code: "fetch_failed", FinishedAt: c.FinishedAt}, "unknown", true)
 		})
 	}
 }
@@ -346,7 +346,7 @@ func TestRefreshAttemptReadbackCancelReadErrorAndSameUUIDRecovery(t *testing.T) 
 	if !errors.Is(err, context.Canceled) {
 		t.Fatalf("cancel error=%v", err)
 	}
-	readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "running", false)
+	_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "running", false)
 	var count int
 	if err := s.db.QueryRow("SELECT COUNT(*) FROM ingest_runs WHERE connector='epss_feed'").Scan(&count); err != nil || count != 1 {
 		t.Fatalf("recovery created extra attempt count=%d err=%v", count, err)
@@ -355,7 +355,7 @@ func TestRefreshAttemptReadbackCancelReadErrorAndSameUUIDRecovery(t *testing.T) 
 	if _, err := s.db.Exec("ALTER TABLE ingest_runs RENAME TO unavailable_ingest_runs"); err != nil {
 		t.Fatal(err)
 	}
-	readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "unknown", true)
+	_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "unknown", true)
 }
 
 func TestRefreshAttemptReadbackRejectsInvalidExpectationBeforeDatabase(t *testing.T) {
@@ -441,7 +441,7 @@ func TestRefreshAttemptReadbackRejectsUUIDStorageAliases(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "unknown", true)
+			_ = readAttemptWithoutWrites(t, s, ctx, c.Attempt, nil, "unknown", true)
 		})
 	}
 }

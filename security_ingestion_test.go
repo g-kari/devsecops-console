@@ -100,7 +100,7 @@ func TestFetchIngestionLedgerAndNoFalseResolution(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s := store.New()
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			target := config.Target{Owner: "org", Repo: "api"}
 			cfg := &config.Config{Targets: []config.Target{target}}
 			if tc.filtered {
@@ -151,7 +151,7 @@ func TestFetchIngestionLedgerAndNoFalseResolution(t *testing.T) {
 
 func TestFetchIngestionRepeatedPollsPreserveIdentityAndEvidence(t *testing.T) {
 	s := store.New()
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	target := config.Target{Owner: "org", Repo: "api"}
 	cfg := &config.Config{Targets: []config.Target{target}}
 	alert := model.Alert{Owner: "org", Repo: "api", Number: 7, Severity: model.SeverityHigh, PackageName: "sample"}
@@ -210,7 +210,7 @@ func TestFetchIngestionHonorsPolicyBeforeAndAfterFetch(t *testing.T) {
 	for _, stage := range []string{"before", "during", "unconfigured_owner"} {
 		t.Run(stage, func(t *testing.T) {
 			s := store.New()
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			target := config.Target{Owner: "org", Repo: "api"}
 			cfg := &config.Config{Targets: []config.Target{{Owner: "org"}}}
 			client := &ingestionFetchClient{result: github.FetchResult{Alerts: []model.Alert{{Owner: "org", Repo: "api", Number: 1}}, CompleteRepos: []string{"org/api"}}}
@@ -252,7 +252,7 @@ func TestFetchIngestionHonorsPolicyBeforeAndAfterFetch(t *testing.T) {
 
 func TestFetchIngestionFinalizesAfterCancellation(t *testing.T) {
 	s := store.New()
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	target := config.Target{Owner: "org", Repo: "api"}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -272,7 +272,7 @@ func TestFetchIngestionFinalizationFailureIsReturned(t *testing.T) {
 	for _, rateLimited := range []bool{false, true} {
 		t.Run(map[bool]string{false: "fetch_error", true: "rate_limit_nil_legacy_return"}[rateLimited], func(t *testing.T) {
 			s := store.New()
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 			target := config.Target{Owner: "org", Repo: "api"}
 			fetchErr := errors.New("fetch sentinel")
 			var sourceErr error = fetchErr
@@ -298,12 +298,12 @@ func TestFetchIngestionLegacySaveFailureIsNotReportedAsSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	db, err := sql.Open("sqlite", path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	if _, err := db.Exec(`CREATE TRIGGER reject_legacy_insert BEFORE INSERT ON alert_records BEGIN SELECT RAISE(ABORT,'injected failure'); END`); err != nil {
 		t.Fatal(err)
 	}
@@ -348,14 +348,14 @@ func TestFetchIngestionMetadataWriteFailureIsNotReportedAsSuccess(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	rec := &model.AlertRecord{Alert: model.Alert{Owner: "org", Repo: "api", Number: 1, Summary: "old"}, State: model.AlertStateApproved, NotifiedAt: time.Now()}
 	s.SaveObserved(rec)
 	db, err := sql.Open("sqlite", path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	if _, err := db.Exec(`CREATE TRIGGER reject_metadata_update BEFORE UPDATE OF alert_json ON alert_records BEGIN SELECT RAISE(ABORT,'injected failure'); END`); err != nil {
 		t.Fatal(err)
 	}
