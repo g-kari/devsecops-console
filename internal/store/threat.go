@@ -19,7 +19,7 @@ func (s *Store) UpsertThreat(ctx context.Context, source string, snapshots []mod
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	for _, snap := range snapshots {
 		body, err := json.Marshal(snap)
 		if err != nil {
@@ -108,7 +108,7 @@ func (s *Store) listThreatSnapshots(ctx context.Context, keys []string) (map[str
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	out := map[string]model.ThreatSnapshot{}
 	for rows.Next() {
 		var key, source, fetched, body string

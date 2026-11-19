@@ -30,7 +30,7 @@ func (s *Store) QueryRepositories(ctx context.Context) ([]RepositoryStatus, erro
 	if err != nil {
 		return nil, fmt.Errorf("リポジトリ集計取得失敗: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var repos []RepositoryStatus
 	for rows.Next() {
 		var repo RepositoryStatus

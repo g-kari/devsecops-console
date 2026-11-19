@@ -54,7 +54,7 @@ func TestArchiveContainsOnlyAllowedAssetsAndUnixExecutableModes(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer z.Close()
+			defer func() { _ = z.Close() }()
 			if len(z.File) != len(assets)+2 {
 				t.Fatalf("unexpected files: %d", len(z.File))
 			}

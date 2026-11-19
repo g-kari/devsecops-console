@@ -9,7 +9,7 @@ import (
 
 func TestClaimEvaluationRejectsDuplicateAndResolvedButAllowsManualRefresh(t *testing.T) {
 	s := New()
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	rec := &model.AlertRecord{Alert: model.Alert{Owner: "org", Repo: "api", Number: 1}, EvalStatus: model.EvalStatusPending, NotifiedAt: time.Now()}
 	s.SaveObserved(rec)
 	if ok, err := s.ClaimEvaluation(context.Background(), rec.Alert.ID, false); err != nil || !ok {

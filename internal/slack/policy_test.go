@@ -18,7 +18,7 @@ import (
 
 func TestExcludedSlackActionsKeepStateAndReportBothFailures(t *testing.T) {
 	s := store.New()
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 	cfg := &config.Config{Targets: []config.Target{{Owner: "org", Excludes: []string{"api"}}}}
 	rec := &model.AlertRecord{Alert: model.Alert{Owner: "org", Repo: "api", Number: 1}, State: model.AlertStatePending, NotifiedAt: time.Now()}
 	s.SaveObserved(rec)

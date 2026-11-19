@@ -161,7 +161,7 @@ func writeArchive(root, binary, out, version, arch, buildInfo string) error {
 		if err != nil {
 			return fmt.Errorf("同梱ファイル取得 %s: %w", name, err)
 		}
-		defer input.Close()
+		defer func() { _ = input.Close() }()
 		header := &zip.FileHeader{Name: prefix + name, Method: zip.Deflate}
 		header.SetMode(mode)
 		writer, err := z.CreateHeader(header)

@@ -89,7 +89,7 @@ func (s *Store) QueryReport(ctx context.Context, filter ReportFilter) (ReportPag
 	if err != nil {
 		return page, fmt.Errorf("レポート記事取得失敗: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	for rows.Next() {
 		var item feed.Item
 		var published *string

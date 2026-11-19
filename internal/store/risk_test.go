@@ -26,7 +26,7 @@ func TestScoreHistoryRecordsTransitionsAndSnapshotTime(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var hashes []string
 	for rows.Next() {
 		var hash, computed, body string

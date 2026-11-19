@@ -177,7 +177,7 @@ func FetchWithCache(ctx context.Context, feedURL string, opt FetchOptions) (Fetc
 	if err != nil {
 		return FetchResult{}, fmt.Errorf("フィード取得失敗: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusNotModified {
 		if opt.ETag == "" && opt.LastModified == "" {
 			return FetchResult{}, fmt.Errorf("条件なしの要求に304が返されました")
