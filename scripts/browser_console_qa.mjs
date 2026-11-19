@@ -89,7 +89,7 @@ class CDP {
       this.close(e, 'parse_error');
     }
   }
-  call(method, params= {}, sessionId) {
+  call(method, params= {}, sessionId, timeoutMs=10000) {
     if(this.closed){startupObserve(this.startupDiagnostics, 'notSent', method, 'client_closed');return Promise.reject(new Error('CDP is closed'));}
     if(this.pending.size>=64){startupObserve(this.startupDiagnostics, 'notSent', method, 'pending_bound');return Promise.reject(new Error('CDP pending-command bound exceeded'));}
     const id=++this.next;
@@ -99,7 +99,7 @@ class CDP {
         this.pending.delete(id);
         startupObserve(this.startupDiagnostics, 'settle', id, 'timeout');
         reject(new Error(`CDP timeout: ${method}`));
-      }, 10000);
+      }, timeoutMs);
       this.pending.set(id, {
         resolve, reject, timer, method
       });
@@ -128,6 +128,25 @@ class CDP {
       p.reject(error);
     }
     this.pending.clear();
+  }
+}
+// The first CDP command after spawning Chrome can exceed the usual 10s
+// command timeout while the browser is still starting on a loaded runner.
+// Browser.getVersion is read-only and idempotent, so retry only that
+// handshake: a longer per-attempt timeout and a bounded attempt count.
+// Any other failure (including a closed pipe) is returned immediately.
+const HANDSHAKE_ATTEMPTS=3;
+const HANDSHAKE_TIMEOUT_MS=30000;
+const HANDSHAKE_RETRY_DELAY_MS=500;
+async function browserHandshake(client, attempts=HANDSHAKE_ATTEMPTS, retryDelayMs=HANDSHAKE_RETRY_DELAY_MS) {
+  for(let attempt=1; ; attempt++) {
+    try {
+      const result=await client.call('Browser.getVersion', {}, undefined, HANDSHAKE_TIMEOUT_MS);
+      return {result, attempts:attempt};
+    }catch(e) {
+      if(attempt>=attempts||!String(e?.message??e).startsWith('CDP timeout: Browser.getVersion'))throw e;
+      await delay(retryDelayMs);
+    }
   }
 }
 // Track only CDP interception decisions, never the lifetime of an SSE response.
@@ -1118,6 +1137,32 @@ async function selfTest() {
   assert.equal(client.receivedMessages,1);
   assert.equal(client.buffer.length,0);
   client.close(new Error('self-test done'));
+  {
+    let calls=0;
+    const flaky= {call: async()=> {
+      calls++;
+      if(calls<3)throw new Error('CDP timeout: Browser.getVersion');
+      return {product:'synthetic handshake'};
+    }};
+    const shook=await browserHandshake(flaky, 3, 0);
+    assert.equal(shook.result.product, 'synthetic handshake');
+    assert.equal(shook.attempts, 3);
+    assert.equal(calls, 3);
+    let closedCalls=0;
+    const closed= {call: async()=> {
+      closedCalls++;
+      throw new Error('CDP is closed');
+    }};
+    await assert.rejects(()=>browserHandshake(closed, 3, 0), /CDP is closed/);
+    assert.equal(closedCalls, 1, 'non-timeout handshake failure must not retry');
+    let timeoutCalls=0;
+    const stuck= {call: async()=> {
+      timeoutCalls++;
+      throw new Error('CDP timeout: Browser.getVersion');
+    }};
+    await assert.rejects(()=>browserHandshake(stuck, 3, 0), /CDP timeout: Browser\.getVersion/);
+    assert.equal(timeoutCalls, 3, 'handshake retries must stay bounded');
+  }
   assert(allowedOrigin('http://127.0.0.1:123/assets', new Set(['http://127.0.0.1:123'])));
   for(const u of ['https://example.invalid', 'http://localhost:123', 'http://127.0.0.1:124', 'file:///tmp/x', 'data:text/html,x', 'http://user:secret@127.0.0.1:123'])assert(!allowedOrigin(u, new Set(['http://127.0.0.1:123'])));
   assert(contrast('rgb(6, 43, 36)', 'rgb(120, 221, 194)')>=4.5);
@@ -1733,7 +1778,10 @@ async function main() {
         violation('unexpected WebSocket');
       }
     });
-    checks.browser=await client.call('Browser.getVersion');
+    const handshake=await browserHandshake(client);
+    checks.browser=handshake.result;
+    checks.startup.handshake_attempts=handshake.attempts;
+    checks.startup.handshake_timeout_ms=HANDSHAKE_TIMEOUT_MS;
     checks.startup.handshake_elapsed_ms=Math.round(performance.now()-chromeStartedAt);
     checks.cdp_pipe_handshake=true;
     manifest.browser=checks.browser;
@@ -1744,7 +1792,7 @@ async function main() {
     };
     checks.sandbox_disable_flags=false;
     checks.configured_deadlines_ms= {
-      cdp_command:10000, navigation:10000, browser_watchdog:180000, graceful_exit:3000, signal_exit:2000
+      cdp_command:10000, browser_handshake:30000, browser_handshake_attempts:3, navigation:10000, browser_watchdog:180000, graceful_exit:3000, signal_exit:2000
     };
     manifest.node=process.version;
     await client.call('Target.setAutoAttach', {
