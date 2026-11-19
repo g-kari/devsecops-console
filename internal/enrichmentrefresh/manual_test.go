@@ -208,7 +208,7 @@ func TestManualControllerRejectsDependenciesAndBindingsWithoutIO(t *testing.T) {
 	if _, err := c.Reconcile(context.Background(), manualOperationID(99)); !errors.Is(err, ErrManualNotFound) {
 		t.Fatal("unknown operation read back external state")
 	}
-	if _, err := c.Reconcile(nil, manualOperationID(99)); !errors.Is(err, ErrManualInvalid) {
+	if _, err := c.Reconcile(nil, manualOperationID(99)); !errors.Is(err, ErrManualInvalid) { //nolint:staticcheck // nil context is the test input: the callee must reject it explicitly
 		t.Fatal("nil recovery context accepted")
 	}
 	var absent *ManualController

@@ -23,7 +23,7 @@ func validUUID(s string) bool {
 			if s[i] != '-' {
 				return false
 			}
-		} else if !(s[i] >= '0' && s[i] <= '9' || s[i] >= 'a' && s[i] <= 'f') {
+		} else if (s[i] < '0' || s[i] > '9') && (s[i] < 'a' || s[i] > 'f') {
 			return false
 		}
 	}
@@ -35,7 +35,7 @@ func lowerHex(s string) bool {
 		return false
 	}
 	for i := range s {
-		if !(s[i] >= '0' && s[i] <= '9' || s[i] >= 'a' && s[i] <= 'f') {
+		if (s[i] < '0' || s[i] > '9') && (s[i] < 'a' || s[i] > 'f') {
 			return false
 		}
 	}

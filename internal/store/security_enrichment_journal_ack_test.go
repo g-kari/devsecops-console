@@ -68,7 +68,7 @@ func TestJournalAckInvalidContextAndClosedDBReturnUnknown(t *testing.T) {
 		t.Fatal(err)
 	}
 	expected := enrichmentjournal.AppendRequest{Sequence: 1, Checkpoint: journalStoreFrames(t)[0]}
-	if state, err := db.ReadSecurityEnrichmentCheckpointAcknowledgement(nil, expected); err == nil || state.State != "unknown" {
+	if state, err := db.ReadSecurityEnrichmentCheckpointAcknowledgement(nil, expected); err == nil || state.State != "unknown" { //nolint:staticcheck // nil context is the test input: the callee must reject it explicitly
 		t.Fatal("nil context accepted")
 	}
 	if err := db.Close(); err != nil {

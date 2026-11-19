@@ -255,7 +255,7 @@ func trivyArtifactIdentity(report *trivyReport) (string, error) {
 
 func validTrivyDigest(value string) bool {
 	algorithm, digest, ok := strings.Cut(value, ":")
-	if !ok || !((algorithm == "sha256" && len(digest) == 64) || (algorithm == "sha512" && len(digest) == 128)) {
+	if !ok || (algorithm != "sha256" || len(digest) != 64) && (algorithm != "sha512" || len(digest) != 128) {
 		return false
 	}
 	_, err := hex.DecodeString(digest)

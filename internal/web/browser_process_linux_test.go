@@ -286,7 +286,7 @@ func browserQARunOwnedProcess(ctx context.Context, cmd *exec.Cmd) (map[string]an
 		}
 		return current
 	}
-	current := refresh()
+	_ = refresh() // initial discovery/reaping pass; the snapshot is superseded below
 	wait := make(chan error, 1)
 	go func() { wait <- cmd.Wait() }()
 	ticker := time.NewTicker(40 * time.Millisecond)
@@ -311,7 +311,7 @@ running:
 		}
 		return result
 	}
-	current = refresh()
+	current := refresh()
 	left := remaining(current)
 	naturalDeadline := time.Now().Add(500 * time.Millisecond)
 	for len(left) > 0 && time.Now().Before(naturalDeadline) {

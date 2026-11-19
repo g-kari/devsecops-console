@@ -422,7 +422,7 @@ func browserQAMetadata() map[string]string {
 		}
 		safe := true
 		for _, r := range value {
-			if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || strings.ContainsRune("-_.", r)) {
+			if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') && !strings.ContainsRune("-_.", r) {
 				safe = false
 			}
 		}
@@ -461,7 +461,7 @@ func browserQAValidateOutput(t *testing.T, out string) {
 			t.Fatal(err)
 		}
 		name := entry.Name()
-		if !info.Mode().IsRegular() || strings.ContainsAny(name, "/\\") || !(strings.HasSuffix(name, ".png") || name == "checks.json" || name == "manifest.json" || name == "stability.json") {
+		if !info.Mode().IsRegular() || strings.ContainsAny(name, "/\\") || (!strings.HasSuffix(name, ".png") && name != "checks.json" && name != "manifest.json" && name != "stability.json") {
 			t.Fatalf("unexpected artifact entry %q", name)
 		}
 		size += info.Size()

@@ -185,7 +185,7 @@ func (s *Store) FinishIngestRun(ctx context.Context, id, result, coverage, error
 		return fmt.Errorf("ingest runの完了状態が不正です")
 	}
 	// Only bounded machine codes, never arbitrary API errors, may enter this field.
-	if len(errorCode) > 64 || strings.IndexFunc(errorCode, func(r rune) bool { return !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '_') }) >= 0 {
+	if len(errorCode) > 64 || strings.IndexFunc(errorCode, func(r rune) bool { return (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '_' }) >= 0 {
 		return fmt.Errorf("ingest error codeが不正です")
 	}
 	tx, err := s.db.BeginTx(ctx, nil)
@@ -232,22 +232,22 @@ func (s *Store) ObserveDependabot(ctx context.Context, alert model.Alert, runID 
 	defer s.mu.Unlock()
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("Dependabot観測開始失敗: %w", err)
+		return fmt.Errorf("dependabot観測開始失敗: %w", err)
 	}
 	defer func() { _ = tx.Rollback() }()
 	var source, scope, result string
 	if err := tx.QueryRowContext(ctx, `SELECT connector,scope,result FROM ingest_runs WHERE id=?`, runID).Scan(&source, &scope, &result); err != nil {
-		return fmt.Errorf("Dependabot ingest run確認失敗: %w", err)
+		return fmt.Errorf("dependabot ingest run確認失敗: %w", err)
 	}
 	repo := alert.Owner + "/" + alert.Repo
 	if source != "dependabot" || result != "running" || (!strings.EqualFold(scope, alert.Owner) && !strings.EqualFold(scope, repo)) {
-		return fmt.Errorf("Dependabot観測がingest scope外です")
+		return fmt.Errorf("dependabot観測がingest scope外です")
 	}
 	if err := projectDependabot(ctx, tx, model.AlertRecord{Alert: alert}, runID, at, true); err != nil {
 		return err
 	}
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("Dependabot観測確定失敗: %w", err)
+		return fmt.Errorf("dependabot観測確定失敗: %w", err)
 	}
 	return nil
 }
@@ -259,7 +259,7 @@ func projectDependabot(ctx context.Context, tx *sql.Tx, rec model.AlertRecord, r
 	}
 	value, err := adapter.NormalizeDependabot(rec, normalizedRun, at.UTC())
 	if err != nil {
-		return fmt.Errorf("Dependabot正規化失敗: %w", err)
+		return fmt.Errorf("dependabot正規化失敗: %w", err)
 	}
 	if runID == "" {
 		var fingerprint, status string
@@ -281,7 +281,7 @@ func projectDependabot(ctx context.Context, tx *sql.Tx, rec model.AlertRecord, r
 		}
 		value, err = adapter.NormalizeDependabot(rec, id, at.UTC())
 		if err != nil {
-			return fmt.Errorf("Dependabot正規化失敗: %w", err)
+			return fmt.Errorf("dependabot正規化失敗: %w", err)
 		}
 	}
 	return projectSecurityFinding(ctx, tx, model.SecurityFinding{Asset: value.Asset, Finding: value.Finding, Observation: value.Observation})
@@ -299,7 +299,7 @@ func projectSecurityFinding(ctx context.Context, tx *sql.Tx, value model.Securit
 			return fmt.Errorf("既存Finding解析失敗: %w", err)
 		}
 		if previous.AssetID != value.Finding.AssetID || previous.Category != value.Finding.Category {
-			return fmt.Errorf("Finding identity conflict")
+			return fmt.Errorf("finding identity conflict")
 		}
 		value.Finding.FirstSeen = previous.FirstSeen
 		value.Finding.TriageStatus = previous.TriageStatus
@@ -316,41 +316,41 @@ func projectSecurityFinding(ctx context.Context, tx *sql.Tx, value model.Securit
 			return fmt.Errorf("既存Asset解析失敗: %w", err)
 		}
 		if prior.Type != value.Asset.Type || prior.Provider != value.Asset.Provider || prior.Account != value.Asset.Account || prior.Region != value.Asset.Region || prior.NativeID != value.Asset.NativeID {
-			return fmt.Errorf("Asset identity conflict")
+			return fmt.Errorf("asset identity conflict")
 		}
 	}
 
 	stale := existingErr == nil && value.Observation.ObservedAt.Before(previous.LastSeen)
 	assetJSON, err := json.Marshal(value.Asset)
 	if err != nil {
-		return fmt.Errorf("Asset変換失敗: %w", err)
+		return fmt.Errorf("asset変換失敗: %w", err)
 	}
 	a := value.Asset
 	if _, err := tx.ExecContext(ctx, `INSERT INTO assets(id,type,provider,account,region,native_id,environment,criticality,body_json) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING`, a.ID, a.Type, a.Provider, a.Account, a.Region, a.NativeID, a.Environment, a.Criticality, string(assetJSON)); err != nil {
-		return fmt.Errorf("Asset保存失敗: %w", err)
+		return fmt.Errorf("asset保存失敗: %w", err)
 	}
 	if !stale {
 		findingJSON, err := json.Marshal(value.Finding)
 		if err != nil {
-			return fmt.Errorf("Finding変換失敗: %w", err)
+			return fmt.Errorf("finding変換失敗: %w", err)
 		}
 		f := value.Finding
 		if _, err := tx.ExecContext(ctx, `INSERT INTO findings(id,category,asset_id,canonical_key,severity,triage_status,source_status,first_seen,last_seen,fingerprint,body_json) VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET canonical_key=excluded.canonical_key,severity=excluded.severity,source_status=excluded.source_status,last_seen=excluded.last_seen,fingerprint=excluded.fingerprint,body_json=excluded.body_json`, f.ID, f.Category, f.AssetID, f.CanonicalKey, f.Severity, f.TriageStatus, f.SourceStatus, f.FirstSeen.UTC().Format(time.RFC3339Nano), f.LastSeen.UTC().Format(time.RFC3339Nano), value.Observation.Fingerprint, string(findingJSON)); err != nil {
-			return fmt.Errorf("Finding保存失敗: %w", err)
+			return fmt.Errorf("finding保存失敗: %w", err)
 		}
 	}
 	observationJSON, err := json.Marshal(value.Observation)
 	if err != nil {
-		return fmt.Errorf("Observation変換失敗: %w", err)
+		return fmt.Errorf("observation変換失敗: %w", err)
 	}
 	o := value.Observation
 	result, err := tx.ExecContext(ctx, `INSERT INTO observations(id,source,account,source_finding_id,finding_id,ingest_run_id,raw_ref,observed_at,fingerprint,body_json) VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(source,account,source_finding_id,ingest_run_id,fingerprint) DO NOTHING`, o.ID, o.Source, o.Account, o.SourceFindingID, o.FindingID, o.IngestRunID, o.RawRef, o.ObservedAt.UTC().Format(time.RFC3339Nano), o.Fingerprint, string(observationJSON))
 	if err != nil {
-		return fmt.Errorf("Observation保存失敗: %w", err)
+		return fmt.Errorf("observation保存失敗: %w", err)
 	}
 	n, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("Observation保存件数確認失敗: %w", err)
+		return fmt.Errorf("observation保存件数確認失敗: %w", err)
 	}
 	if changed && !stale && n > 0 {
 		id, err := securityID()
@@ -366,10 +366,10 @@ func projectSecurityFinding(ctx context.Context, tx *sql.Tx, value model.Securit
 		event := model.Event{ID: id, EntityID: value.Finding.ID, EventType: kind, Actor: value.Observation.Source, Timestamp: value.Observation.ObservedAt.UTC(), BeforeRef: previousFingerprint, AfterRef: value.Observation.Fingerprint}
 		body, err := json.Marshal(event)
 		if err != nil {
-			return fmt.Errorf("Event変換失敗: %w", err)
+			return fmt.Errorf("event変換失敗: %w", err)
 		}
 		if _, err := tx.ExecContext(ctx, `INSERT INTO events(id,entity_id,event_type,actor,timestamp,before_ref,after_ref,body_json) VALUES(?,?,?,?,?,?,?,?)`, event.ID, event.EntityID, event.EventType, event.Actor, event.Timestamp.Format(time.RFC3339Nano), event.BeforeRef, event.AfterRef, string(body)); err != nil {
-			return fmt.Errorf("Event保存失敗: %w", err)
+			return fmt.Errorf("event保存失敗: %w", err)
 		}
 	}
 	return nil

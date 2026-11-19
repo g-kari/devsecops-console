@@ -266,7 +266,7 @@ func validFindingsAPISource(source string) bool {
 		return false
 	}
 	return strings.IndexFunc(source, func(r rune) bool {
-		return !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '_' || r == '-')
+		return (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '_' && r != '-'
 	}) < 0
 }
 
@@ -281,7 +281,7 @@ func validFindingAPIID(id string) bool {
 			}
 			continue
 		}
-		if !(id[i] >= '0' && id[i] <= '9' || id[i] >= 'a' && id[i] <= 'f' || id[i] >= 'A' && id[i] <= 'F') {
+		if (id[i] < '0' || id[i] > '9') && (id[i] < 'a' || id[i] > 'f') && (id[i] < 'A' || id[i] > 'F') {
 			return false
 		}
 	}

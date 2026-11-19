@@ -177,9 +177,10 @@ func TestPreservationContractUnknownCheckpointStopsWritesAndKeepsSameSourceGate(
 					t.Fatal(readErr)
 				}
 				want := "running"
-				if stopAt == PreserveBegin {
+				switch stopAt {
+				case PreserveBegin:
 					want = "missing"
-				} else if stopAt == PreserveReturned {
+				case PreserveReturned:
 					want = "unknown" // Full completion is required to verify success.
 				}
 				if state.State != want {

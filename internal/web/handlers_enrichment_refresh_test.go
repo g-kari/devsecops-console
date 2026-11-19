@@ -689,14 +689,14 @@ func legacyManualAPIGuardReference(next http.HandlerFunc) http.Handler {
 			host = r.Host
 		}
 		if err != nil || !loopbackHost(remote) || !loopbackHost(host) {
-			http.Error(w, "TUI APIはローカル接続専用です", 403)
+			http.Error(w, "TUI APIはローカル接続専用です", http.StatusForbidden)
 			return
 		}
 		w.Header().Set("Cache-Control", "no-store")
 		if origin := r.Header.Get("Origin"); origin != "" {
 			u, err := url.Parse(origin)
 			if err != nil || u.Host != r.Host || u.Scheme != "http" {
-				http.Error(w, "Originが不正です", 403)
+				http.Error(w, "Originが不正です", http.StatusForbidden)
 				return
 			}
 		}
@@ -704,7 +704,7 @@ func legacyManualAPIGuardReference(next http.HandlerFunc) http.Handler {
 			cookie, err := r.Cookie("csrf_token")
 			token := r.Header.Get("X-CSRF-Token")
 			if err != nil || token == "" || cookie.Value == "" || subtle.ConstantTimeCompare([]byte(cookie.Value), []byte(token)) != 1 {
-				http.Error(w, "CSRF tokenが必要です", 403)
+				http.Error(w, "CSRF tokenが必要です", http.StatusForbidden)
 				return
 			}
 		}

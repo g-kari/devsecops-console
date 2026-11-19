@@ -36,14 +36,14 @@ exec "$@"`
 
 func (e *AppleEvaluator) Evaluate(parent context.Context, alert model.Alert) (result *model.Evaluation, err error) {
 	if !e.cfg.Sandbox.Enabled {
-		return nil, errors.New("Apple container隔離が無効です。隔離なしでは評価しません")
+		return nil, errors.New("apple container隔離が無効です。隔離なしでは評価しません")
 	}
 	osName, arch := runtime.GOOS, runtime.GOARCH
 	if e.platform != nil {
 		osName, arch = e.platform()
 	}
 	if osName != "darwin" || arch != "arm64" {
-		return nil, errors.New("Apple containerはApple SiliconのmacOS 26以降専用です")
+		return nil, errors.New("apple containerはApple SiliconのmacOS 26以降専用です")
 	}
 	timeout := e.cfg.Sandbox.Timeout
 	if timeout <= 0 {
@@ -61,21 +61,21 @@ func (e *AppleEvaluator) Evaluate(parent context.Context, alert model.Alert) (re
 	}
 	major, err := strconv.Atoi(strings.Split(strings.TrimSpace(string(version)), ".")[0])
 	if err != nil || major < 26 {
-		return nil, errors.New("Apple container評価にはmacOS 26以降が必要です")
+		return nil, errors.New("apple container評価にはmacOS 26以降が必要です")
 	}
 	memory := e.cfg.Sandbox.MemoryLimit
 	if memory == "" {
 		memory = "512m"
 	}
 	if !regexp.MustCompile(`^[1-9][0-9]*[kKmMgG]$`).MatchString(memory) {
-		return nil, errors.New("Apple containerメモリは512mや1gの形式で指定してください")
+		return nil, errors.New("apple containerメモリは512mや1gの形式で指定してください")
 	}
 	cpus := e.cfg.Sandbox.ContainerCPUs
 	if cpus == 0 {
 		cpus = 1
 	}
 	if cpus < 1 || cpus > 64 {
-		return nil, errors.New("Apple containerのCPU数は1〜64で指定してください")
+		return nil, errors.New("apple containerのCPU数は1〜64で指定してください")
 	}
 	work, err := os.MkdirTemp("", "security-notice-apple-auth-*")
 	if err != nil {
@@ -145,7 +145,7 @@ func (e *AppleEvaluator) Evaluate(parent context.Context, alert model.Alert) (re
 	args = append(args, cliArgs...)
 	out, err := run(ctx, codexCommand{Name: path, Args: args, Input: buildPrompt(alert)})
 	if err != nil {
-		return nil, fmt.Errorf("Apple container AI評価失敗: %w", safeAppleError(err, secrets))
+		return nil, fmt.Errorf("apple container AI評価失敗: %w", safeAppleError(err, secrets))
 	}
 	safe := redactOutput(out, secrets)
 	if e.cfg.Provider == "codex" {
@@ -213,7 +213,7 @@ func (e *AppleEvaluator) stageAuth(work, auth string) ([]string, string, error) 
 			if home == "" {
 				user, err := os.UserHomeDir()
 				if err != nil {
-					return nil, "", fmt.Errorf("Codexホーム取得: %w", err)
+					return nil, "", fmt.Errorf("codexホーム取得: %w", err)
 				}
 				home = filepath.Join(user, ".codex")
 			}
@@ -235,14 +235,14 @@ func (e *AppleEvaluator) stageAuth(work, auth string) ([]string, string, error) 
 		if home == "" {
 			user, err := os.UserHomeDir()
 			if err != nil {
-				return nil, "", fmt.Errorf("Claudeホーム取得: %w", err)
+				return nil, "", fmt.Errorf("claudeホーム取得: %w", err)
 			}
 			home = filepath.Join(user, ".claude")
 		}
 		raw, err = readCredential(filepath.Join(home, file))
 	}
 	if err != nil {
-		return nil, "", fmt.Errorf("Apple container用認証準備（APIキーまたはファイル認証が必要）: %w", err)
+		return nil, "", fmt.Errorf("apple container用認証準備（APIキーまたはファイル認証が必要）: %w", err)
 	}
 	secrets = collectSecrets(raw)
 	// The private 0700 parent protects the file on the host; guest UID 1000 needs

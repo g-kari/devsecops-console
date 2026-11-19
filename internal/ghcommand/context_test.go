@@ -188,9 +188,10 @@ func TestIdentityAndExpectedLoginPreflightPreserveContextCancellation(t *testing
 			for _, phase := range []string{"before execution", "during execution"} {
 				t.Run(operation+"/"+failure+"/"+phase, func(t *testing.T) {
 					settings := Settings{Mode: "token_env", TokenEnv: "APP_TOKEN"}
-					if operation == "inherited identity" {
+					switch operation {
+					case "inherited identity":
 						settings = Settings{}
-					} else if operation == "expected login preflight" {
+					case "expected login preflight":
 						settings.ExpectedLogin = "alice"
 					}
 					c, err := NewWithEnvironment(fixtureExecutable(), settings, []string{"APP_TOKEN=synthetic-token"})

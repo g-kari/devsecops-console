@@ -66,7 +66,7 @@ func (s Service) fetch(ctx context.Context, endpoint string) ([]byte, error) {
 		return nil, fmt.Errorf("threat endpoint is empty")
 	}
 	u, err := url.Parse(endpoint)
-	if err != nil || (u.Scheme != "https" && !(s.Client != nil && u.Scheme == "http")) || u.Hostname() == "" {
+	if err != nil || (u.Scheme != "https" && (s.Client == nil || u.Scheme != "http")) || u.Hostname() == "" {
 		return nil, fmt.Errorf("threat endpoint must use https")
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)

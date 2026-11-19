@@ -62,7 +62,7 @@ func (s GitHubSource) Latest(ctx context.Context) (Release, error) {
 	}
 	var release Release
 	if err := json.Unmarshal(out, &release); err != nil {
-		return Release{}, fmt.Errorf("Release解析: %w", err)
+		return Release{}, fmt.Errorf("release解析: %w", err)
 	}
 	return release, nil
 }

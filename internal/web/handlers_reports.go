@@ -198,10 +198,6 @@ func (s *Server) handleVulnerabilityReport(w http.ResponseWriter, r *http.Reques
 	})
 }
 
-func scoreAlert(profiles []model.ServiceProfile, assessments []model.CVEAssessment, rec *model.AlertRecord) model.ScoreResult {
-	return scoreAlertWithThreat(profiles, assessments, nil, rec)
-}
-
 func scoreAlertWithThreat(profiles []model.ServiceProfile, assessments []model.CVEAssessment, threats map[string]model.ThreatSnapshot, rec *model.AlertRecord) model.ScoreResult {
 	profile := model.ServiceProfile{ID: "unconfigured:" + rec.Alert.Owner + "/" + rec.Alert.Repo, Exposure: model.ExposureUnknown, Environment: model.EnvironmentUnknown, Authentication: model.AuthUnknown, BusinessCriticality: model.RiskUnknown, DataClassification: model.RiskUnknown, IntegrityImpact: model.RiskUnknown, PrivilegeScope: model.PrivilegeUnknown}
 	var matching []model.ServiceProfile
@@ -249,13 +245,6 @@ func scoreProfileWithThreat(profile model.ServiceProfile, assessments []model.CV
 		return model.ScoreResult{ProfileID: profile.ID, Upper: 100, Status: "provisional", Priority: "immediate", Confidence: "insufficient", MissingFacts: []string{err.Error()}, ModelVersion: scoring.ModelVersion()}
 	}
 	return result
-}
-
-func errString(err error) string {
-	if err == nil {
-		return ""
-	}
-	return err.Error()
 }
 
 func (s *Server) handleVulnerabilityRefresh(w http.ResponseWriter, r *http.Request) {

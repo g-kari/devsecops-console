@@ -29,7 +29,7 @@ func (s *Server) credentialStatus(saved config.Credentials) (control.Credentials
 }
 func (s *Server) handleTUICredentials(w http.ResponseWriter, r *http.Request) {
 	if s.cfgPath == "" {
-		http.Error(w, "認証設定の保存先がありません", 503)
+		http.Error(w, "認証設定の保存先がありません", http.StatusServiceUnavailable)
 		return
 	}
 	var saved config.Credentials

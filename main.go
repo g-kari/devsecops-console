@@ -515,7 +515,7 @@ func makeFetchHandler(cfg *config.Config, ghClient github.Client, s *store.Store
 			}
 			err := guard.WithAllowed(ctx, alert.Owner, alert.Repo, func(current config.Snapshot) error {
 				if err := s.ObserveDependabot(ctx, alert, run.ID, time.Now().UTC()); err != nil {
-					return fmt.Errorf("Dependabot観測保存失敗: %w", err)
+					return fmt.Errorf("dependabot観測保存失敗: %w", err)
 				}
 				cfg := &current.Config
 				if s.HasByKey(alert.Owner, alert.Repo, alert.Number) {
@@ -730,10 +730,6 @@ func makeFetchHandler(cfg *config.Config, ghClient github.Client, s *store.Store
 
 		return nil
 	}
-}
-
-func repositoryExcluded(cfg *config.Config, owner, repo string) bool {
-	return cfg == nil || !policy.IsMonitored(cfg.Targets, owner, repo)
 }
 
 // makeEvaluateHandler はEvaluateAlertジョブのハンドラを返す

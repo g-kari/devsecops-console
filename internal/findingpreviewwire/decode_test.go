@@ -204,11 +204,12 @@ func TestW06StructuralFailClosedAndNoPayloadInErrors(t *testing.T) {
 		e := addEvidence(m, "epss")
 		k := addEvidence(m, "kev")
 		var target map[string]any
-		if path == "epss" {
+		switch path {
+		case "epss":
 			target = e
-		} else if path == "kev" {
+		case "kev":
 			target = k
-		} else {
+		default:
 			target = m[path].(map[string]any)
 		}
 		target["raw_ref"] = secret

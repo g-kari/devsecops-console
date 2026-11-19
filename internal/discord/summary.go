@@ -73,7 +73,7 @@ func (c *Client) refreshSummary(owner, repo string, create bool, delivered ...fu
 	err := c.store.WithNotificationLock(func() error {
 		snapshot, err := c.configSource()
 		if err != nil {
-			return fmt.Errorf("Discord集約設定取得失敗: %w", err)
+			return fmt.Errorf("discord集約設定取得失敗: %w", err)
 		}
 		if !policy.IsMonitored(snapshot.Config.Targets, owner, repo) {
 			return nil
@@ -120,7 +120,7 @@ func (c *Client) refreshSummary(owner, repo string, create bool, delivered ...fu
 		payload := webhookPayload{Embeds: []embed{{Title: notification.SingleLine(owner + "/" + repo), Description: summaryText, Fields: fields, Color: colorDefault}}}
 		body, err := marshalPayload(payload)
 		if err != nil {
-			return fmt.Errorf("Discord集約変換失敗: %w", err)
+			return fmt.Errorf("discord集約変換失敗: %w", err)
 		}
 		send := func(method, message string) (int, string, error) {
 			endpoint, err := url.Parse(c.webhookURL)
@@ -135,7 +135,7 @@ func (c *Client) refreshSummary(owner, repo string, create bool, delivered ...fu
 			}
 			endpoint.RawQuery = query.Encode()
 			if err := c.limiter.Wait(context.Background()); err != nil {
-				return 0, "", fmt.Errorf("Discord集約待機失敗: %w", err)
+				return 0, "", fmt.Errorf("discord集約待機失敗: %w", err)
 			}
 			req, err := http.NewRequest(method, endpoint.String(), bytes.NewReader(body))
 			if err != nil {

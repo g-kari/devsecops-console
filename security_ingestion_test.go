@@ -215,14 +215,15 @@ func TestFetchIngestionHonorsPolicyBeforeAndAfterFetch(t *testing.T) {
 			cfg := &config.Config{Targets: []config.Target{{Owner: "org"}}}
 			client := &ingestionFetchClient{result: github.FetchResult{Alerts: []model.Alert{{Owner: "org", Repo: "api", Number: 1}}, CompleteRepos: []string{"org/api"}}}
 			var runID string
-			if stage == "before" {
+			switch stage {
+			case "before":
 				cfg.Targets[0].Excludes = []string{"api"}
-			} else if stage == "during" {
+			case "during":
 				client.during = func() {
 					runID = runningIngestionID(t, s, "org/api")
 					cfg.Targets[0].Excludes = []string{"api"}
 				}
-			} else {
+			default:
 				target = config.Target{Owner: "other"}
 			}
 			if err := makeFetchHandler(cfg, client, s, queue.New(10, 1), nil, nil)(context.Background(), queue.Job{Payload: target}); err != nil {
@@ -275,7 +276,7 @@ func TestFetchIngestionFinalizationFailureIsReturned(t *testing.T) {
 			defer func() { _ = s.Close() }()
 			target := config.Target{Owner: "org", Repo: "api"}
 			fetchErr := errors.New("fetch sentinel")
-			var sourceErr error = fetchErr
+			var sourceErr = fetchErr
 			if rateLimited {
 				sourceErr = &github.RateLimitError{}
 			}

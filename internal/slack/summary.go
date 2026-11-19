@@ -28,7 +28,7 @@ func (c *SlackClient) refreshSummary(owner, repo string, create bool, delivered 
 	err := c.store.WithNotificationLock(func() error {
 		snapshot, err := c.configSource()
 		if err != nil {
-			return fmt.Errorf("Slack集約設定取得失敗: %w", err)
+			return fmt.Errorf("slack集約設定取得失敗: %w", err)
 		}
 		if !policy.IsMonitored(snapshot.Config.Targets, owner, repo) {
 			return nil
@@ -80,7 +80,7 @@ func (c *SlackClient) refreshSummary(owner, repo string, create bool, delivered 
 			}
 		}
 		if err := c.limiter.Wait(context.Background()); err != nil {
-			return fmt.Errorf("Slack集約待機失敗: %w", err)
+			return fmt.Errorf("slack集約待機失敗: %w", err)
 		}
 		if id != "" {
 			_, _, _, err = c.api.UpdateMessage(c.channelID, id, slackgo.MsgOptionBlocks(blocks...), slackgo.MsgOptionText(slackText(title+" — "+summaryText, 3500), false))
@@ -90,13 +90,13 @@ func (c *SlackClient) refreshSummary(owner, repo string, create bool, delivered 
 			// 削除が確定した場合のみ再作成。権限・レート制限・通信障害では重複を作らない。
 			if err.Error() != "message_not_found" {
 				c.recordRateLimit(err)
-				return fmt.Errorf("Slack集約更新失敗: %w", err)
+				return fmt.Errorf("slack集約更新失敗: %w", err)
 			}
 		}
 		_, id, err = c.api.PostMessage(c.channelID, slackgo.MsgOptionBlocks(blocks...), slackgo.MsgOptionText(slackText(title+" — "+summaryText, 3500), false))
 		if err != nil {
 			c.recordRateLimit(err)
-			return fmt.Errorf("Slack集約作成失敗: %w", err)
+			return fmt.Errorf("slack集約作成失敗: %w", err)
 		}
 		return c.store.SaveNotificationGroup(key, id)
 	})

@@ -48,18 +48,18 @@ func (e *CodexEvaluator) Evaluate(ctx context.Context, alert model.Alert) (*mode
 		if home == "" {
 			userHome, err := os.UserHomeDir()
 			if err != nil {
-				return nil, fmt.Errorf("Codexホーム取得失敗: %w", err)
+				return nil, fmt.Errorf("codexホーム取得失敗: %w", err)
 			}
 			home = filepath.Join(userHome, ".codex")
 		}
 		if _, err := os.Stat(filepath.Join(home, "auth.json")); err != nil {
-			return nil, fmt.Errorf("Codex認証ファイルがありません。codex login を実行し、認証情報をファイルに保存してください: %w", err)
+			return nil, fmt.Errorf("codex認証ファイルがありません。codex login を実行し、認証情報をファイルに保存してください: %w", err)
 		}
 		spec = e.dockerCommand(prompt, home)
 	} else {
 		dir, err := os.MkdirTemp("", "security-notice-codex-*")
 		if err != nil {
-			return nil, fmt.Errorf("Codex作業ディレクトリ作成失敗: %w", err)
+			return nil, fmt.Errorf("codex作業ディレクトリ作成失敗: %w", err)
 		}
 		defer func() {
 			if err := os.RemoveAll(dir); err != nil {
@@ -78,7 +78,7 @@ func (e *CodexEvaluator) Evaluate(ctx context.Context, alert model.Alert) (*mode
 	}
 	out, err := runner(ctx, spec)
 	if err != nil {
-		return nil, fmt.Errorf("Codex AI評価失敗: %w", err)
+		return nil, fmt.Errorf("codex AI評価失敗: %w", err)
 	}
 	return parseCodexOutput(out)
 }
@@ -142,7 +142,7 @@ func parseCodexOutput(out []byte) (*model.Evaluation, error) {
 			} `json:"item"`
 		}
 		if err := json.Unmarshal(scanner.Bytes(), &event); err != nil {
-			return nil, fmt.Errorf("Codex結果形式が不正です: %w", err)
+			return nil, fmt.Errorf("codex結果形式が不正です: %w", err)
 		}
 		if event.Type == "turn.failed" {
 			return nil, fmt.Errorf("Codex評価が失敗しました")
@@ -155,7 +155,7 @@ func parseCodexOutput(out []byte) (*model.Evaluation, error) {
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("Codex結果読込失敗: %w", err)
+		return nil, fmt.Errorf("codex結果読込失敗: %w", err)
 	}
 	if !completed || final == "" {
 		return nil, fmt.Errorf("Codex評価結果が完了していません")

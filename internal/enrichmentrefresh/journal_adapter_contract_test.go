@@ -75,6 +75,8 @@ func TestJournalAdapterContractLosslessConverterRejectsInconsistentDuplicates(t 
 	}
 }
 
+type adapterOwnerContextKey struct{}
+
 type adapterContractRepository struct {
 	db                           *store.Store
 	appendCalls, readCalls       int
@@ -107,7 +109,7 @@ func TestJournalAdapterContractOwnedControllerConfirmsOnlyKnownLaterCommit(t *te
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx := context.WithValue(context.Background(), struct{}{}, "synthetic-adapter-owner")
+	ctx := context.WithValue(context.Background(), adapterOwnerContextKey{}, "synthetic-adapter-owner")
 	id := manualOperationID(610)
 	request := Request{Connector: "epss_feed", Limit: 200}
 	op, replay, err := c.Call(ctx, id, request)

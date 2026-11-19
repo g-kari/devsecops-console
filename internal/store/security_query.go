@@ -277,7 +277,7 @@ func validateFindingQuery(query FindingQuery) error {
 		return fmt.Errorf("invalid finding search or asset ID")
 	}
 	if query.Source != "" && (len(query.Source) > 64 || query.Source[0] < 'a' || query.Source[0] > 'z' || strings.IndexFunc(query.Source, func(r rune) bool {
-		return !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '_' || r == '-')
+		return (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '_' && r != '-'
 	}) >= 0) {
 		return fmt.Errorf("invalid finding source")
 	}

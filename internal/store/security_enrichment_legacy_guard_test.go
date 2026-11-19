@@ -117,7 +117,7 @@ func TestLegacyFeedGuardCancellationReadErrorsAndPositiveReplayClassification(t 
 				t.Fatal("nil transaction accepted or raw input exposed")
 			}
 		}
-		if err := guardLegacyEnrichmentWriteTx(nil, nil, "epss_feed"); !errors.Is(err, errReservationConflict) {
+		if err := guardLegacyEnrichmentWriteTx(nil, nil, "epss_feed"); !errors.Is(err, errReservationConflict) { //nolint:staticcheck // nil context is the test input: the callee must reject it explicitly
 			t.Fatal("nil private context accepted")
 		}
 	})
