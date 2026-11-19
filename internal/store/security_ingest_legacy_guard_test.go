@@ -136,10 +136,10 @@ func TestIngestGuardContextClosedDatabaseAndReadFailureKeepBoundaries(t *testing
 			t.Fatal("Finish transaction cancellation lost context identity or changed data")
 		}
 	}
-	if run, err := startGuardedFeedIngestRun(nil, nil, "epss_feed", "scope", at); err == nil || !reflect.DeepEqual(run, model.IngestRun{}) {
+	if run, err := startGuardedFeedIngestRun(nil, nil, "epss_feed", "scope", at); err == nil || !reflect.DeepEqual(run, model.IngestRun{}) { //nolint:staticcheck // nil context is the test input: the callee must reject it explicitly
 		t.Fatal("nil private Start dependency accepted")
 	}
-	if err := guardLegacyIngestFinishTx(nil, nil, "id"); !errors.Is(err, errReservationConflict) {
+	if err := guardLegacyIngestFinishTx(nil, nil, "id"); !errors.Is(err, errReservationConflict) { //nolint:staticcheck // nil context is the test input: the callee must reject it explicitly
 		t.Fatal("nil private Finish dependency accepted")
 	}
 	known := ingestGuardContractPositive(t, db, "dependabot", "scope", at)

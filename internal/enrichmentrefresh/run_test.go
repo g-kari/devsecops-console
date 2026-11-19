@@ -15,7 +15,7 @@ import (
 	"github.com/g-kari/dependabot-alert-notice/internal/store"
 )
 
-var syntheticStoreError = errors.New("PRIVATE-post-commit-error")
+var errSyntheticStore = errors.New("PRIVATE-post-commit-error")
 
 type observedRepository struct {
 	Repository
@@ -47,7 +47,7 @@ func jsonValue(t *testing.T, value any) string {
 func (r *observedRepository) QuerySecurityEnrichmentRefreshTargets(ctx context.Context, after string, limit int) (store.SecurityEnrichmentRefreshTargetPage, error) {
 	r.calls["query"]++
 	if r.queryError {
-		return store.SecurityEnrichmentRefreshTargetPage{}, syntheticStoreError
+		return store.SecurityEnrichmentRefreshTargetPage{}, errSyntheticStore
 	}
 	page, err := r.Repository.QuerySecurityEnrichmentRefreshTargets(ctx, after, limit)
 	if err == nil && r.page != nil {
@@ -60,14 +60,14 @@ func (r *observedRepository) BeginSecurityEnrichmentRefresh(ctx context.Context,
 	r.calls["begin"]++
 	r.beginJSON = jsonValue(r.t, a)
 	if r.beginBefore {
-		return false, syntheticStoreError
+		return false, errSyntheticStore
 	}
 	replay, err := r.Repository.BeginSecurityEnrichmentRefresh(ctx, a)
 	if r.onBegin != nil {
 		r.onBegin()
 	}
 	if err == nil && r.beginAfter {
-		return false, syntheticStoreError
+		return false, errSyntheticStore
 	}
 	return replay, err
 }
@@ -79,14 +79,14 @@ func (r *observedRepository) FailSecurityEnrichmentRefresh(ctx context.Context, 
 	r.cleanupErrors = append(r.cleanupErrors, ctx.Err())
 	r.failJSON = jsonValue(r.t, &store.SecurityEnrichmentRefreshFailure{Code: code, FinishedAt: at})
 	if r.failBefore {
-		return false, syntheticStoreError
+		return false, errSyntheticStore
 	}
 	replay, err := r.Repository.FailSecurityEnrichmentRefresh(ctx, a, code, at)
 	if r.onFail != nil {
 		r.onFail()
 	}
 	if err == nil && r.failAfter {
-		return false, syntheticStoreError
+		return false, errSyntheticStore
 	}
 	return replay, err
 }
@@ -98,7 +98,7 @@ func (r *observedRepository) ReadSecurityEnrichmentRefreshAttempt(ctx context.Co
 	r.cleanupErrors = append(r.cleanupErrors, ctx.Err())
 	r.readAttemptJSON, r.readFailureJSON = jsonValue(r.t, a), jsonValue(r.t, expected)
 	if r.readError {
-		return store.SecurityEnrichmentRefreshState{State: "unknown"}, syntheticStoreError
+		return store.SecurityEnrichmentRefreshState{State: "unknown"}, errSyntheticStore
 	}
 	return r.Repository.ReadSecurityEnrichmentRefreshAttempt(ctx, a, expected)
 }
@@ -107,14 +107,14 @@ func (r *observedRepository) CompleteSecurityEnrichmentRefresh(ctx context.Conte
 	r.calls["complete"]++
 	r.completeJSON = jsonValue(r.t, c)
 	if r.completeBefore {
-		return store.SecurityEnrichmentImportResult{}, syntheticStoreError
+		return store.SecurityEnrichmentImportResult{}, errSyntheticStore
 	}
 	result, err := r.Repository.CompleteSecurityEnrichmentRefresh(ctx, c)
 	if r.onComplete != nil {
 		r.onComplete()
 	}
 	if err == nil && r.completeAfter {
-		return store.SecurityEnrichmentImportResult{}, syntheticStoreError
+		return store.SecurityEnrichmentImportResult{}, errSyntheticStore
 	}
 	return result, err
 }
@@ -126,7 +126,7 @@ func (r *observedRepository) ReconcileSecurityEnrichmentRefresh(ctx context.Cont
 	r.cleanupErrors = append(r.cleanupErrors, ctx.Err())
 	r.reconcileJSON = jsonValue(r.t, c)
 	if r.reconcileError {
-		return store.SecurityEnrichmentRefreshState{State: "unknown"}, syntheticStoreError
+		return store.SecurityEnrichmentRefreshState{State: "unknown"}, errSyntheticStore
 	}
 	return r.Repository.ReconcileSecurityEnrichmentRefresh(ctx, c)
 }
@@ -389,15 +389,16 @@ func TestRefreshOnceInvalidClocksAreNeverCorrected(t *testing.T) {
 			if h.repo.calls["complete"] != 0 || out.Advance {
 				t.Fatal("invalid clock became a completion")
 			}
-			if kind == "start" {
+			switch kind {
+			case "start":
 				if err == nil || h.uuidCalls != 0 || h.repo.calls["begin"] != 0 || h.fetchCalls != 0 {
 					t.Fatal("invalid start reached reservation")
 				}
-			} else if kind == "observed" {
+			case "observed":
 				if err != nil || out.Outcome != "failed" || out.Code != "invalid_metadata" {
 					t.Fatalf("backward observation was repaired=%+v err=%v", out, err)
 				}
-			} else {
+			default:
 				assertPending(t, h, out, err)
 				if out.Code != "invalid_clock" || out.Pending.ExpectedFailure != nil || h.repo.calls["fail"] != 0 {
 					t.Fatal("invalid finish was fabricated for Fail")

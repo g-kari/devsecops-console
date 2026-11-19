@@ -143,9 +143,10 @@ func (s *Server) serveManualEnrichmentAPI(w http.ResponseWriter, r *http.Request
 	data, status := manualAPIReadBody(r)
 	if status != 0 {
 		code := "invalid_request"
-		if status == http.StatusRequestEntityTooLarge {
+		switch status {
+		case http.StatusRequestEntityTooLarge:
 			code = "body_too_large"
-		} else if status == http.StatusRequestTimeout {
+		case http.StatusRequestTimeout:
 			code = "canceled"
 		}
 		manualAPIError(w, r, status, code)
@@ -262,7 +263,7 @@ func manualAPIOperationID(value string) bool {
 			if c != '-' {
 				return false
 			}
-		} else if !(c >= '0' && c <= '9' || c >= 'a' && c <= 'f') {
+		} else if (c < '0' || c > '9') && (c < 'a' || c > 'f') {
 			return false
 		}
 	}

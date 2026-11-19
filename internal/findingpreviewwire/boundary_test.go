@@ -4,16 +4,44 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
 )
 
+// boundaryPackage groups the parsed files of one package (test-local
+// replacement for the deprecated go/ast.Package).
+type boundaryPackage struct {
+	Files map[string]*ast.File
+}
+
 func TestW09ProductionBoundary(t *testing.T) {
 	allowed := map[string]bool{"bytes": true, "encoding/json": true, "io": true, "strconv": true, "strings": true, "time": true, "unicode": true, "unicode/utf8": true, "github.com/g-kari/dependabot-alert-notice/internal/findingpreview": true, "github.com/g-kari/dependabot-alert-notice/internal/model": true}
-	files, err := parser.ParseDir(token.NewFileSet(), ".", nil, 0)
-	if err != nil {
-		t.Fatal(err)
+	files := map[string]*boundaryPackage{}
+	{
+		// parser.ParseDir is deprecated; read and parse the package directory directly.
+		fset := token.NewFileSet()
+		entries, err := os.ReadDir(".")
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, entry := range entries {
+			name := entry.Name()
+			if entry.IsDir() || !strings.HasSuffix(name, ".go") {
+				continue
+			}
+			file, err := parser.ParseFile(fset, name, nil, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			pkg := files[file.Name.Name]
+			if pkg == nil {
+				pkg = &boundaryPackage{Files: map[string]*ast.File{}}
+				files[file.Name.Name] = pkg
+			}
+			pkg.Files[name] = file
+		}
 	}
 	calls := 0
 	for _, pkg := range files {

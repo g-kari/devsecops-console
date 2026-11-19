@@ -54,7 +54,7 @@ func (a *cliCodexAuth) StartLogin(ctx context.Context, path string) error {
 	cmd.Stdout = io.Discard
 	cmd.Stderr = io.Discard
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("Codex認証開始失敗: %w", err)
+		return fmt.Errorf("codex認証開始失敗: %w", err)
 	}
 	a.running = true
 	go func() {

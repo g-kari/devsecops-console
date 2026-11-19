@@ -161,7 +161,7 @@ func secretScanningType(value string) bool {
 		return false
 	}
 	for _, r := range value {
-		if !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '_') {
+		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '_' {
 			return false
 		}
 	}

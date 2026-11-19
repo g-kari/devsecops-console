@@ -5,6 +5,7 @@ package ghcommand
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -76,6 +77,14 @@ type Context struct {
 	secrets     []string
 	execute     executor
 }
+
+// MarshalJSON pins the JSON representation to an empty object: the context
+// holds credentials and must never expose them through serialization.
+func (c Context) MarshalJSON() ([]byte, error) {
+	return []byte("{}"), nil
+}
+
+var _ json.Marshaler = Context{}
 
 // New snapshots the application's current environment at an operation boundary.
 func New(path string, settings Settings) (*Context, error) {

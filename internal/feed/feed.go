@@ -81,12 +81,6 @@ func retryAt(header string, now time.Time) time.Time {
 
 var cvePattern = regexp.MustCompile(`(?i)\bCVE-[0-9]{4}-[0-9]{4,}\b`)
 
-type rssDocument struct {
-	Channel struct {
-		Title string    `xml:"title"`
-		Items []rssItem `xml:"item"`
-	} `xml:"channel"`
-}
 type rssItem struct {
 	GUID        string `xml:"guid"`
 	About       string `xml:"http://www.w3.org/1999/02/22-rdf-syntax-ns# about,attr"`
@@ -95,9 +89,6 @@ type rssItem struct {
 	Description string `xml:"description"`
 	PubDate     string `xml:"pubDate"`
 	DCDate      string `xml:"http://purl.org/dc/elements/1.1/ date"`
-}
-type atomDocument struct {
-	Entries []atomEntry `xml:"entry"`
 }
 type atomEntry struct {
 	ID        string     `xml:"id"`
@@ -136,7 +127,7 @@ func FetchWithCache(ctx context.Context, feedURL string, opt FetchOptions) (Fetc
 	if err != nil {
 		return FetchResult{}, fmt.Errorf("フィードURL解析失敗: %w", err)
 	}
-	if u.Scheme != "https" && !(opt.AllowHTTP && u.Scheme == "http") {
+	if u.Scheme != "https" && (!opt.AllowHTTP || u.Scheme != "http") {
 		return FetchResult{}, fmt.Errorf("HTTPS以外のフィードURLは許可されていません")
 	}
 	if u.User != nil {
@@ -153,7 +144,7 @@ func FetchWithCache(ctx context.Context, feedURL string, opt FetchOptions) (Fetc
 			if len(via) >= 3 {
 				return fmt.Errorf("リダイレクト回数超過")
 			}
-			if req.URL.Scheme != "https" && !(opt.AllowHTTP && req.URL.Scheme == "http") {
+			if req.URL.Scheme != "https" && (!opt.AllowHTTP || req.URL.Scheme != "http") {
 				return fmt.Errorf("リダイレクト先がHTTPSではありません")
 			}
 			if !opt.AllowPrivateNetwork {
@@ -267,7 +258,7 @@ func parse(body []byte, maxItems int) ([]Item, error) {
 			items = append(items, normalizeAtom(v))
 		}
 	}
-	if len(items) == 0 && root.Channel == nil && len(root.Entries) == 0 && !(root.XMLName.Local == "RDF" && len(root.Items) > 0) {
+	if len(items) == 0 && root.Channel == nil && len(root.Entries) == 0 && (root.XMLName.Local != "RDF" || len(root.Items) <= 0) {
 		return nil, fmt.Errorf("RSS channel、RDF itemまたはAtom entryがありません")
 	}
 	return items, nil

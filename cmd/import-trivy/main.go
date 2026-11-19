@@ -211,7 +211,7 @@ func localPath(path string) bool {
 		return true
 	}
 	for _, c := range path[:colon] {
-		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '+' || c == '-' || c == '.') {
+		if (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9') && c != '+' && c != '-' && c != '.' {
 			return true
 		}
 	}
@@ -229,7 +229,7 @@ func validUUID(id string) bool {
 			}
 			continue
 		}
-		if !(c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F') {
+		if (c < '0' || c > '9') && (c < 'a' || c > 'f') && (c < 'A' || c > 'F') {
 			return false
 		}
 	}

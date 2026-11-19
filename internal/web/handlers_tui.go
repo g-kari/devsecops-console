@@ -27,7 +27,7 @@ func (s *Server) registerTUI(mux *http.ServeMux) {
 	mux.Handle("GET /api/tui/status", s.localTUI(s.handleTUIStatus))
 	mux.Handle("POST /api/tui/poll", s.localTUI(func(w http.ResponseWriter, r *http.Request) {
 		if s.pollFn == nil {
-			http.Error(w, "取得処理が利用できません", 503)
+			http.Error(w, "取得処理が利用できません", http.StatusServiceUnavailable)
 			return
 		}
 		s.handlePoll(w, r)
@@ -211,14 +211,14 @@ func (s *Server) handleTUISave(w http.ResponseWriter, r *http.Request) {
 	}
 	unlock, err := s.repositoryPolicy.LockUpdate(r.Context())
 	if err != nil {
-		http.Error(w, "設定変更の待機を中止しました", 408)
+		http.Error(w, "設定変更の待機を中止しました", http.StatusRequestTimeout)
 		return
 	}
 	defer unlock()
 	s.cfgMu.Lock()
 	defer s.cfgMu.Unlock()
 	if request.Revision != s.cfg.ConfigRevision {
-		http.Error(w, "設定が更新されています。再読込して編集してください", 409)
+		http.Error(w, "設定が更新されています。再読込して編集してください", http.StatusConflict)
 		return
 	}
 	next, err := config.Clone(*s.cfg)

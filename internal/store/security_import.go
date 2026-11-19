@@ -207,7 +207,7 @@ func validOfflineSource(run model.IngestRun, item model.SecurityFinding) bool {
 		if !hasNumber || numberErr != nil || number <= 0 || strconv.FormatInt(number, 10) != numberText || o.RawRef != "https://github.com/"+repository+"/security/secret-scanning/"+numberText {
 			return false
 		}
-		if len(f.SecretType) == 0 || len(f.SecretType) > 128 || strings.IndexFunc(f.SecretType, func(r rune) bool { return !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '_') }) >= 0 {
+		if len(f.SecretType) == 0 || len(f.SecretType) > 128 || strings.IndexFunc(f.SecretType, func(r rune) bool { return (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '_' }) >= 0 {
 			return false
 		}
 		expectedStatus := model.SourceStatusActive

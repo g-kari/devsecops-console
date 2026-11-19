@@ -29,7 +29,7 @@ func pinGitHub(args []string) ([]string, error) {
 	}
 	result := append([]string(nil), args...)
 	start := 2
-	allowed := map[string]bool{}
+	var allowed map[string]bool
 	requireRepo := false
 	switch args[0] + " " + args[1] {
 	case "api graphql":

@@ -399,7 +399,7 @@ func TestFencedEnrichmentContractCommittedLostReturnUsesRetainedReadonlyProofOnl
 	wrong := fencedContractClone(t, complete)
 	wrong.Checkpoint.Checkpoint.Prepared.Completion.OriginalDigest = "sha256:" + strings.Repeat("f", 64)
 	fencedContractRedigest(t, &wrong)
-	rejected, err := db.ReadSecurityEnrichmentFencedRefresh(context.Background(), wrong)
+	rejected, _ := db.ReadSecurityEnrichmentFencedRefresh(context.Background(), wrong)
 	if rejected.State == "matched" || !reflect.DeepEqual(rejected.Acknowledgement, SecurityEnrichmentFencedAcknowledgement{}) || rejected.Business.Receipt != "" {
 		t.Fatal("different retained full completion received the old receipt")
 	}

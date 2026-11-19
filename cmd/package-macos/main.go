@@ -96,7 +96,7 @@ func build(ctx context.Context, root, out, version string, allowDirty bool) erro
 		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch, "CGO_ENABLED=0")
 		cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("Mac %sビルド: %w", arch, err)
+			return fmt.Errorf("mac %sビルド: %w", arch, err)
 		}
 		name := "security-notice_" + version + "_macos_" + arch + ".zip"
 		path := filepath.Join(out, name)
@@ -141,13 +141,13 @@ func writeArchive(root, binary, out, version, arch, buildInfo string) error {
 	}
 	f, err := macho.Open(binary)
 	if err != nil {
-		return fmt.Errorf("Macバイナリ形式確認: %w", err)
+		return fmt.Errorf("macバイナリ形式確認: %w", err)
 	}
 	cpu, kind := f.Cpu, f.Type
 	if err := f.Close(); err != nil {
-		return fmt.Errorf("Macバイナリclose: %w", err)
+		return fmt.Errorf("macバイナリclose: %w", err)
 	}
-	if kind != macho.TypeExec || !((arch == "arm64" && cpu == macho.CpuArm64) || (arch == "amd64" && cpu == macho.CpuAmd64)) {
+	if kind != macho.TypeExec || (arch != "arm64" || cpu != macho.CpuArm64) && (arch != "amd64" || cpu != macho.CpuAmd64) {
 		return fmt.Errorf("Mac対象CPUとバイナリが一致しません: arch=%s cpu=%s type=%s", arch, cpu, kind)
 	}
 	file, err := os.OpenFile(out, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)

@@ -4,19 +4,48 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"strconv"
+	"strings"
 	"testing"
 )
 
 // Keep this internal preview from silently gaining operational dependencies.
 // Reading its source here is test-only; production inputs remain in memory.
+// boundaryPackage groups the parsed files of one package (test-local
+// replacement for the deprecated go/ast.Package).
+type boundaryPackage struct {
+	Files map[string]*ast.File
+}
+
 func TestProductionBoundaryHasNoOperationalImportsOrClock(t *testing.T) {
 	allowed := map[string]bool{"fmt": true, "maps": true, "math": true, "regexp": true, "slices": true, "time": true,
 		"github.com/g-kari/dependabot-alert-notice/internal/model":   true,
 		"github.com/g-kari/dependabot-alert-notice/internal/scoring": true}
-	files, err := parser.ParseDir(token.NewFileSet(), ".", nil, 0)
-	if err != nil {
-		t.Fatal(err)
+	files := map[string]*boundaryPackage{}
+	{
+		// parser.ParseDir is deprecated; read and parse the package directory directly.
+		fset := token.NewFileSet()
+		entries, err := os.ReadDir(".")
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, entry := range entries {
+			name := entry.Name()
+			if entry.IsDir() || !strings.HasSuffix(name, ".go") {
+				continue
+			}
+			file, err := parser.ParseFile(fset, name, nil, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			pkg := files[file.Name.Name]
+			if pkg == nil {
+				pkg = &boundaryPackage{Files: map[string]*ast.File{}}
+				files[file.Name.Name] = pkg
+			}
+			pkg.Files[name] = file
+		}
 	}
 	for _, pkg := range files {
 		for name, file := range pkg.Files {

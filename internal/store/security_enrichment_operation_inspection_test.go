@@ -63,9 +63,10 @@ func TestOperationInspectionExactFailureAndCompletionAreDifferentProofs(t *testi
 				t.Fatal(err)
 			}
 			want, wantError := "unknown", false
-			if kind == "exact-failure" {
+			switch kind {
+			case "exact-failure":
 				want = "failed"
-			} else if kind == "finish-mismatch" {
+			case "finish-mismatch":
 				wantError = true
 			}
 			out := inspectWithoutTableChanges(t, db, frames[0].OperationID, "valid", want, wantError)

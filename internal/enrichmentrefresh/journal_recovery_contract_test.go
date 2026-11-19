@@ -139,7 +139,7 @@ func TestJournalTerminalRecoveryContractLostReturnAndReadonlyProof(t *testing.T)
 				db, raw := recoveryContractStore(t)
 				h := harness(t, db)
 				if failed {
-					h.fetchError = syntheticStoreError
+					h.fetchError = errSyntheticStore
 					h.repo.failAfter, h.repo.readError = reconcileFirst, reconcileFirst
 				} else {
 					h.repo.completeAfter, h.repo.reconcileError = reconcileFirst, reconcileFirst
@@ -152,7 +152,7 @@ func TestJournalTerminalRecoveryContractLostReturnAndReadonlyProof(t *testing.T)
 							t.Fatalf("terminal did not actually commit: %+v %v", *ack, *err)
 						}
 						terminalCommits++
-						*ack, *err = enrichmentjournal.Acknowledgement{}, syntheticStoreError
+						*ack, *err = enrichmentjournal.Acknowledgement{}, errSyntheticStore
 					}
 				}
 				r.readHook = func(_ context.Context, _ *enrichmentjournal.AppendRequest, proof *store.SecurityEnrichmentJournalAcknowledgementState, err *error) {
@@ -160,7 +160,7 @@ func TestJournalTerminalRecoveryContractLostReturnAndReadonlyProof(t *testing.T)
 						t.Fatalf("initial readonly acknowledgement did not actually match: %+v %v", *proof, *err)
 					}
 					lostReads++
-					*proof, *err = store.SecurityEnrichmentJournalAcknowledgementState{}, syntheticStoreError
+					*proof, *err = store.SecurityEnrichmentJournalAcknowledgementState{}, errSyntheticStore
 				}
 				c, err := NewRecoverableJournalManualController(h.service, r)
 				if err != nil {
@@ -255,11 +255,11 @@ func TestJournalTerminalRecoveryContractDamagedBusinessProofStaysPending(t *test
 			if *err != nil {
 				t.Fatal(*err)
 			}
-			*ack, *err = enrichmentjournal.Acknowledgement{}, syntheticStoreError
+			*ack, *err = enrichmentjournal.Acknowledgement{}, errSyntheticStore
 		}
 	}
 	r.readHook = func(_ context.Context, _ *enrichmentjournal.AppendRequest, _ *store.SecurityEnrichmentJournalAcknowledgementState, err *error) {
-		*err = syntheticStoreError
+		*err = errSyntheticStore
 	}
 	c, err := NewRecoverableJournalManualController(h.service, r)
 	if err != nil {

@@ -299,7 +299,7 @@ func uuid(value string) bool {
 			}
 			continue
 		}
-		if !(r >= '0' && r <= '9' || r >= 'a' && r <= 'f') {
+		if (r < '0' || r > '9') && (r < 'a' || r > 'f') {
 			return false
 		}
 	}

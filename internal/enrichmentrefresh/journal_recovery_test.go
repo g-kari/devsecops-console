@@ -33,16 +33,16 @@ func recoveryFixture(t *testing.T, failed bool) (*ManualController, *recoveryRep
 	db := contractStore(t, true)
 	h := harness(t, db)
 	if failed {
-		h.fetchError = syntheticStoreError
+		h.fetchError = errSyntheticStore
 	}
 	r := &recoveryRepository{faultJournalRepository: &faultJournalRepository{JournalRepository: db}, db: db}
 	r.appendHook = func(_ context.Context, request *enrichmentjournal.AppendRequest, _ *enrichmentjournal.Acknowledgement, err *error) {
 		if request.Checkpoint.Stage == enrichmentjournal.Returned {
-			*err = syntheticStoreError
+			*err = errSyntheticStore
 		}
 	}
 	r.readHook = func(_ context.Context, _ *enrichmentjournal.AppendRequest, _ *store.SecurityEnrichmentJournalAcknowledgementState, err *error) {
-		*err = syntheticStoreError
+		*err = errSyntheticStore
 	}
 	c, err := NewRecoverableJournalManualController(h.service, r)
 	if err != nil {
@@ -96,7 +96,7 @@ func TestJournalTerminalRecoveryRejectsUncertainProofWithoutChangingEvidence(t *
 				case "missing", "unknown":
 					state.State = kind
 				case "error", "proof-error":
-					*err = syntheticStoreError
+					*err = errSyntheticStore
 				case "operation":
 					state.OperationID = manualOperationID(802)
 				case "newer-head":
@@ -194,7 +194,7 @@ func TestJournalTerminalRecoveryRejectsEarlierStagesPendingAndOtherControllers(t
 			db := contractStore(t, true)
 			h := harness(t, db)
 			if stage == enrichmentjournal.Fail {
-				h.fetchError = syntheticStoreError
+				h.fetchError = errSyntheticStore
 			}
 			if stage == enrichmentjournal.Returned {
 				h.repo.completeAfter, h.repo.reconcileError = true, true
@@ -202,11 +202,11 @@ func TestJournalTerminalRecoveryRejectsEarlierStagesPendingAndOtherControllers(t
 			r := &recoveryRepository{faultJournalRepository: &faultJournalRepository{JournalRepository: db}, db: db}
 			r.appendHook = func(_ context.Context, request *enrichmentjournal.AppendRequest, _ *enrichmentjournal.Acknowledgement, err *error) {
 				if request.Checkpoint.Stage == stage {
-					*err = syntheticStoreError
+					*err = errSyntheticStore
 				}
 			}
 			r.readHook = func(_ context.Context, _ *enrichmentjournal.AppendRequest, _ *store.SecurityEnrichmentJournalAcknowledgementState, err *error) {
-				*err = syntheticStoreError
+				*err = errSyntheticStore
 			}
 			c, err := NewRecoverableJournalManualController(h.service, r)
 			if err != nil {
@@ -306,11 +306,11 @@ func TestJournalTerminalRecoveryConstructorAndNoRunDoNotGrantInspection(t *testi
 	}
 	r.appendHook = func(_ context.Context, request *enrichmentjournal.AppendRequest, _ *enrichmentjournal.Acknowledgement, err *error) {
 		if request.Checkpoint.Stage == enrichmentjournal.Returned {
-			*err = syntheticStoreError
+			*err = errSyntheticStore
 		}
 	}
 	r.readHook = func(_ context.Context, _ *enrichmentjournal.AppendRequest, _ *store.SecurityEnrichmentJournalAcknowledgementState, err *error) {
-		*err = syntheticStoreError
+		*err = errSyntheticStore
 	}
 	id := manualOperationID(804)
 	pending, _, err := c.Call(context.Background(), id, Request{Connector: "epss_feed", Limit: 200})

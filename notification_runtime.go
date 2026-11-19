@@ -65,12 +65,12 @@ func flushNotificationBatches(ctx context.Context, now time.Time, sc *slack.Slac
 	var failures []error
 	if sc != nil {
 		if err := sc.FlushNotifications(ctx, now, guard); err != nil {
-			failures = append(failures, fmt.Errorf("Slackまとめ通知失敗: %w", err))
+			failures = append(failures, fmt.Errorf("slackまとめ通知失敗: %w", err))
 		}
 	}
 	if dc != nil {
 		if err := dc.FlushNotifications(ctx, now, guard); err != nil {
-			failures = append(failures, fmt.Errorf("Discordまとめ通知失敗: %w", err))
+			failures = append(failures, fmt.Errorf("discordまとめ通知失敗: %w", err))
 		}
 	}
 	return errors.Join(failures...)

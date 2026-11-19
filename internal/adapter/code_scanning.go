@@ -62,7 +62,7 @@ func CodeScanningRepository(value string) (string, error) {
 			return "", errors.New("code scanning: invalid repository identifier")
 		}
 		for _, r := range part {
-			if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '-' || i == 1 && (r == '_' || r == '.')) {
+			if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') && r != '-' && (i != 1 || (r != '_' && r != '.')) {
 				return "", errors.New("code scanning: invalid repository identifier")
 			}
 		}

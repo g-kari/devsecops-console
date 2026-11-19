@@ -41,15 +41,16 @@ func terminalRecoveryPayload(checkpoint *PreservationCheckpoint) ([]byte, bool) 
 		return nil, false
 	}
 	p := checkpoint.Prepared
-	if checkpoint.Result.Outcome == "success" {
+	switch checkpoint.Result.Outcome {
+	case "success":
 		if p.Completion == nil || p.ExpectedFailure != nil {
 			return nil, false
 		}
-	} else if checkpoint.Result.Outcome == "failed" {
+	case "failed":
 		if p.ExpectedFailure == nil || p.Completion != nil {
 			return nil, false
 		}
-	} else {
+	default:
 		return nil, false
 	}
 	converted, err := convertJournalCheckpoint(*checkpoint)

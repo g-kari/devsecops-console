@@ -2,7 +2,6 @@ package findingpreviewwire
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"slices"
 	"strings"
@@ -429,7 +428,7 @@ func FuzzAssessmentDecode(f *testing.F) {
 			return
 		}
 		if !r.PreviewOnly || r.ScoreResult == nil && r.AdapterState != "unsupported" {
-			t.Fatal(fmt.Sprintf("invalid successful state: %s", r.AdapterState))
+			t.Fatalf("invalid successful state: %s", r.AdapterState)
 		}
 	})
 }

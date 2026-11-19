@@ -32,7 +32,7 @@ func validUUID(s string) bool {
 			if r != '-' {
 				return false
 			}
-		} else if !(r >= '0' && r <= '9' || r >= 'a' && r <= 'f') {
+		} else if (r < '0' || r > '9') && (r < 'a' || r > 'f') {
 			return false
 		}
 	}

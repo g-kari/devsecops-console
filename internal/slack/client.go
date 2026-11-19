@@ -97,9 +97,9 @@ func (c *SlackClient) Start(ctx context.Context) {
 	defer func() { cancel(); <-eventsDone }()
 
 	slog.Info("Slack Socket Mode 開始")
-	if err := c.socket.RunContext(ctx); err != nil {
-		slog.Error("Slack Socket Mode エラー", "error", err)
-	}
+	// socketmode.Client.RunContext only returns a non-nil error; it never returns nil.
+	err := c.socket.RunContext(ctx)
+	slog.Error("Slack Socket Mode エラー", "error", err)
 }
 
 func (c *SlackClient) API() *slackgo.Client {

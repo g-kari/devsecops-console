@@ -661,7 +661,7 @@ func TestBoundedHTTPFetcherValidHeadersAndContextErrors(t *testing.T) {
 			t.Fatal("zero-value fetcher acquired a default transport")
 		}
 	}
-	if data, err := f.Fetch(nil, "epss"); err == nil || data != nil {
+	if data, err := f.Fetch(nil, "epss"); err == nil || data != nil { //nolint:staticcheck // nil context is the test input: Fetch must reject it explicitly
 		t.Fatal("nil context accepted")
 	}
 }

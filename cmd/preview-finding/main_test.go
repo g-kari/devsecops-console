@@ -162,11 +162,39 @@ func TestCLIArgumentsAndHelp(t *testing.T) {
 		t.Fatal("help writer failure")
 	}
 }
+
+// boundaryPackage groups the parsed files of one package (test-local
+// replacement for the deprecated go/ast.Package).
+type boundaryPackage struct {
+	Files map[string]*ast.File
+}
+
 func TestCLIProductionBoundary(t *testing.T) {
 	allowed := map[string]bool{"encoding/json": true, "io": true, "os": true, "github.com/g-kari/dependabot-alert-notice/internal/findingpreview": true, "github.com/g-kari/dependabot-alert-notice/internal/findingpreviewwire": true}
-	pkgs, err := parser.ParseDir(token.NewFileSet(), ".", nil, 0)
-	if err != nil {
-		t.Fatal(err)
+	pkgs := map[string]*boundaryPackage{}
+	{
+		// parser.ParseDir is deprecated; read and parse the package directory directly.
+		fset := token.NewFileSet()
+		entries, err := os.ReadDir(".")
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, entry := range entries {
+			name := entry.Name()
+			if entry.IsDir() || !strings.HasSuffix(name, ".go") {
+				continue
+			}
+			file, err := parser.ParseFile(fset, name, nil, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			pkg := pkgs[file.Name.Name]
+			if pkg == nil {
+				pkg = &boundaryPackage{Files: map[string]*ast.File{}}
+				pkgs[file.Name.Name] = pkg
+			}
+			pkg.Files[name] = file
+		}
 	}
 	for _, p := range pkgs {
 		for name, f := range p.Files {
