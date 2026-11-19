@@ -313,76 +313,8 @@
           "url": "https://github.com/g-kari/devsecops-console/actions/runs/43611978190/artifacts/14121025721"
         },
         {
-          "label": "PR #99（未完TCP監査の上限付き観測）",
-          "url": "https://github.com/g-kari/devsecops-console/pull/99"
-        },
-        {
-          "label": "観測追加の統合main 3c74216b",
-          "url": "https://github.com/g-kari/devsecops-console/commit/3c74216bf797b2c9348e834fc360fcb169e96f24"
-        },
-        {
-          "label": "PR #99 Checkと新診断artifact",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43605874854/attempts/1"
-        },
-        {
-          "label": "統合後Checkと新診断artifact",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43607878245/attempts/1"
-        },
-        {
-          "label": "PR #97（CJKフォント準備の限定修復）",
-          "url": "https://github.com/g-kari/devsecops-console/pull/97"
-        },
-        {
-          "label": "統合main b7cd341c",
-          "url": "https://github.com/g-kari/devsecops-console/commit/b7cd341cbd0cc411f5abec47373c2996a2ab8bb3"
-        },
-        {
-          "label": "PR #97初回: AWSでfont成功・後段TCP outcome unknown",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43592972728/attempts/1"
-        },
-        {
-          "label": "PR #97同一head Check attempt 2成功（Azure）",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43592972728/attempts/2"
-        },
-        {
-          "label": "統合後Check attempt 1成功（Azure）",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43594867213/attempts/1"
-        },
-        {
-          "label": "PR #96統合後Check初回font guard失敗",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43586822023/attempts/1"
-        },
-        {
-          "label": "PR #96統合後Check attempt 2成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43586822023/attempts/2"
-        },
-        {
-          "label": "PR #95統合時main Check attempt 1",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43579685210"
-        },
-        {
-          "label": "PR #95 Check初回font guard失敗",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43578154811/attempts/1"
-        },
-        {
-          "label": "PR #95 Check attempt 2成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43578154811/attempts/2"
-        },
-        {
-          "label": "PR #89統合時main Check初回成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43569498670"
-        },
-        {
-          "label": "前main Check attempt 2成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43564971431/attempts/2"
-        },
-        {
-          "label": "前main同一SHAの初回起動失敗",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43564971431/attempts/1"
-        },
-        {
-          "label": "旧mainの未完了TCP試行",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43524375431/job/132226360620"
+          "label": "過去の証拠一覧（この修正前の固定版）",
+          "url": "https://github.com/g-kari/devsecops-console/blob/e898645abf7d606e2b419abf2944196df406596e/docs/site-roadmap.json"
         }
       ],
       "plannedStart": null,
@@ -1010,90 +942,6 @@
           "url": "https://github.com/g-kari/devsecops-console/actions/runs/43662759118/attempts/1"
         },
         {
-          "label": "PR #104同一SHAの限定再実行",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43662759118/attempts/2"
-        },
-        {
-          "label": "PR #102（既存Siteへの進捗同期・旧失敗保持）",
-          "url": "https://github.com/g-kari/devsecops-console/pull/102"
-        },
-        {
-          "label": "確認済み配信commit 949bceb5の公開正本",
-          "url": "https://github.com/g-kari/devsecops-console/blob/949bceb50380ddc8e4710563f5510e4e1d670c78/docs/site-roadmap.json"
-        },
-        {
-          "label": "PR #102統合後Trial初回・6実ZIP",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43641605058/attempts/1"
-        },
-        {
-          "label": "PR #100（初回失敗履歴を保持して統合・公開）",
-          "url": "https://github.com/g-kari/devsecops-console/pull/100"
-        },
-        {
-          "label": "確認済み配信commit 51970d05の公開正本",
-          "url": "https://github.com/g-kari/devsecops-console/blob/51970d051494f89947aee12d70d9c613cd79b0e0/docs/site-roadmap.json"
-        },
-        {
-          "label": "PR #100統合後Check attempt 1成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43619220847/attempts/1"
-        },
-        {
-          "label": "PR #100統合後Trial attempt 1成功・6実ZIP確認",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43619220804/attempts/1"
-        },
-        {
-          "label": "PR #98（統合・公開・事後CI確認済み）",
-          "url": "https://github.com/g-kari/devsecops-console/pull/98"
-        },
-        {
-          "label": "確認済み配信commit 2158d52aの公開正本",
-          "url": "https://github.com/g-kari/devsecops-console/blob/2158d52af2810b7650451921a4c3be18f3b0b725/docs/site-roadmap.json"
-        },
-        {
-          "label": "PR #98統合後Check attempt 1成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43599717258/attempts/1"
-        },
-        {
-          "label": "PR #98統合後Trial attempt 1成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43599717350/attempts/1"
-        },
-        {
-          "label": "PR #96（統合・公開・事後CI確認済み）",
-          "url": "https://github.com/g-kari/devsecops-console/pull/96"
-        },
-        {
-          "label": "確認済み配信commit d93601b9の公開正本",
-          "url": "https://github.com/g-kari/devsecops-console/blob/d93601b96a3c71229248d77bf82b5ce2aea3c853/docs/site-roadmap.json"
-        },
-        {
-          "label": "PR #96統合後Check初回font guard失敗",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43586822023/attempts/1"
-        },
-        {
-          "label": "PR #96統合後Check attempt 2成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43586822023/attempts/2"
-        },
-        {
-          "label": "PR #96統合後Trial attempt 1成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43586822018/attempts/1"
-        },
-        {
-          "label": "PR #94（統合・公開確認済み）",
-          "url": "https://github.com/g-kari/devsecops-console/pull/94"
-        },
-        {
-          "label": "確認済み配信commit b16cf8a9の公開正本",
-          "url": "https://github.com/g-kari/devsecops-console/blob/b16cf8a9ac27bde29386d43ebc026d76277ad51b/docs/site-roadmap.json"
-        },
-        {
-          "label": "PR #94統合後Check初回成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43573554666"
-        },
-        {
-          "label": "PR #94統合後Trial初回成功",
-          "url": "https://github.com/g-kari/devsecops-console/actions/runs/43573554658"
-        },
-        {
           "label": "更新手順",
           "url": "https://github.com/g-kari/devsecops-console/blob/main/docs/site-roadmap-update.md"
         },
@@ -1172,6 +1020,10 @@
         {
           "label": "PR #114事後Trial初回・6 ready",
           "url": "https://github.com/g-kari/devsecops-console/actions/runs/44322387121"
+        },
+        {
+          "label": "過去の証拠一覧（この修正前の固定版）",
+          "url": "https://github.com/g-kari/devsecops-console/blob/e898645abf7d606e2b419abf2944196df406596e/docs/site-roadmap.json"
         }
       ],
       "plannedStart": null,
