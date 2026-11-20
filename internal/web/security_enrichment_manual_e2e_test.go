@@ -10,7 +10,6 @@ import (
 	"io"
 	"net/http"
 	"os/exec"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -348,12 +347,7 @@ func TestManualAPITransportCommonReadPreviewAndCLICompleteSyntheticChain(t *test
 	}
 
 	// CI executes only the existing offline CLI; this test starts no app/server.
-	binary := filepath.Join(t.TempDir(), "preview-finding")
-	build := exec.Command("go", "build", "-o", binary, "./cmd/preview-finding")
-	build.Dir = filepath.Join("..", "..")
-	if log, err := build.CombinedOutput(); err != nil {
-		t.Fatalf("build existing offline CLI: %v\n%s", err, log)
-	}
+	binary := buildPreviewFindingCLI(t)
 	command := exec.Command(binary, "--schema", "base")
 	command.Stdin = bytes.NewReader(out.InputSnapshot)
 	result, err := command.Output()

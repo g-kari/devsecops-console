@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -191,12 +190,7 @@ func TestSyntheticRefreshOnceCommonReadPreviewSnapshotAndCLIFullResultParity(t *
 			t.Fatalf("closed snapshot leaked origin/provenance payload %q", excluded)
 		}
 	}
-	binary := filepath.Join(t.TempDir(), "preview-finding")
-	build := exec.Command("go", "build", "-o", binary, "./cmd/preview-finding")
-	build.Dir = filepath.Join("..", "..")
-	if log, err := build.CombinedOutput(); err != nil {
-		t.Fatalf("build existing offline CLI: %v\n%s", err, log)
-	}
+	binary := buildPreviewFindingCLI(t)
 	command := exec.Command(binary, "--schema", "base")
 	command.Stdin = bytes.NewReader(out.InputSnapshot)
 	result, err := command.Output()

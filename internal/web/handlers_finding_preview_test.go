@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -56,6 +57,24 @@ func readPreviewResponse(t *testing.T, srv *Server, id string, at time.Time) fin
 	return out
 }
 
+// buildPreviewFindingCLI builds the existing offline preview-finding CLI
+// into a test-owned directory and returns the executable path. On Windows
+// the go tool writes the binary with a .exe suffix, so the output name must
+// carry the suffix explicitly for the returned path to be executable.
+func buildPreviewFindingCLI(t *testing.T) string {
+	t.Helper()
+	binary := filepath.Join(t.TempDir(), "preview-finding")
+	if runtime.GOOS == "windows" {
+		binary += ".exe"
+	}
+	build := exec.Command("go", "build", "-o", binary, "./cmd/preview-finding")
+	build.Dir = filepath.Join("..", "..")
+	if log, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build existing CLI: %v\n%s", err, log)
+	}
+	return binary
+}
+
 func TestFindingPriorityPreviewReplaysThroughExistingCLIWithoutMutation(t *testing.T) {
 	srv, db := newFindingsAPITestServer(t)
 	seedAPIFinding(t, db, "preview", 1, model.SeverityHigh, "open")
@@ -83,12 +102,7 @@ func TestFindingPriorityPreviewReplaysThroughExistingCLIWithoutMutation(t *testi
 		t.Fatal("stale boundary lost")
 	}
 	// This builds only the existing offline CLI. No application or listener runs.
-	binary := filepath.Join(t.TempDir(), "preview-finding")
-	build := exec.Command("go", "build", "-o", binary, "./cmd/preview-finding")
-	build.Dir = filepath.Join("..", "..")
-	if log, err := build.CombinedOutput(); err != nil {
-		t.Fatalf("build existing CLI: %v\n%s", err, log)
-	}
+	binary := buildPreviewFindingCLI(t)
 	command := exec.Command(binary, "--schema", "base")
 	command.Stdin = bytes.NewReader(out.InputSnapshot)
 	result, err := command.Output()
