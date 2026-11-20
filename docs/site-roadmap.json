@@ -10,7 +10,13 @@
   "repository": "https://github.com/g-kari/devsecops-console",
   "scopeNote": "コード統合、各変更の検証、正式版収録、本番稼働を分ける。main SHA・PR一覧・CIはcheckedAt時点の観測値。成果時刻と公開JSONの配信commitは別。資料更新の統合・配信確認は対応するPRと作業記録で追跡する。 掲載PRはcheckedAt時点の歴史的観測であり、配信後の現在一覧を自動追跡した結果ではない。 各rowのlastCheckedAtと既存履歴の観測時刻を保持し、全33工程の再検証を意味しない。PR期間は観測された作成〜統合期間であり、連続実装労働時間ではない。",
   "currentFocus": "K275は依存宣言21/24の限定受入れ。隔離runner・完全入力・Go/SQLite実行は未成立。 残る宣言入力2組の取得失敗とx/sys v0.49.0の期待hash欠測を保持し、実runner所有・隔離・無通信・外部強制上限と固定toolchainの能力証拠を先に確立する。metadata選択、認証済sourceの受入れ、target package loading、closure固定、compile-only、別のruntime入口レビューという順序を維持する。不足や不明時は停止し、無条件再試行・制限緩和・事故環境のclean仮定はしない。 K305のブラウザーCI起動遅延への恒常対策（Browser.getVersionハンドシェイクの再試行）はPR #120で統合済み。根因修復とは扱わず、効果の確定には今後の失敗率の観測継続が要る。Site実画面は未確認。 lintは上限なし実測232件から0件へ解消し、PR #123で必須チェック化済み。今回の照合範囲はPR #118〜#123の統合反映とmain/PR/CI。他32工程は既存記録を保持し、再検証ではない。",
-  "openPullRequests": [],
+  "openPullRequests": [
+    {
+      "number": 124,
+      "title": "KAZAMI-299: classify comparable Dependabot and Trivy evidence",
+      "url": "https://github.com/g-kari/devsecops-console/pull/124"
+    }
+  ],
   "ci": {
     "status": "success",
     "label": "現行main 7edc1447（PR #123統合、2026-11-19 20:58:59 UTC）時点の観測。事後Check 44614136317は全15 check runs成功（lint・go-check・coverage・build・vulncheck・windows-check・mac-smoke arm64・windows-smoke・ready 6対象）。Trial 44614136420も成功。lintは上限なし実測232件を全件解消して0件となり必須化済み（PR #119・#122・#123）。抑制は理由明記のテスト6行のみ。Site実画面は未検証（実ブラウザ目視が残る）。",
