@@ -13,10 +13,10 @@ func TestCompareFindingEvidenceConservativeClassification(t *testing.T) {
 		return ComparisonEvidence{
 			SecurityFinding: SecurityFinding{
 				Asset:       Asset{ID: "synthetic-asset", Type: "repository", Provider: "github", Account: "example", NativeID: "example/demo"},
-				Finding:     Finding{ID: source+"-finding", AssetID: "synthetic-asset", Category: "vulnerability", VulnerabilityID: "CVE-2099-0001", PackageName: "example-package", PackageEcosystem: "npm", InstalledVersion: "1.0.0", FilePath: "app/package-lock.json", SourceStatus: SourceStatusActive},
-				Observation: Observation{ID: source+"-observation", Source: source, SourceFindingID: source+"-native", FindingID: source+"-finding", IngestRunID: source+"-run", Fingerprint: "synthetic-fingerprint", ObservedAt: at.Add(-2*time.Minute)},
+				Finding:     Finding{ID: source + "-finding", AssetID: "synthetic-asset", Category: "vulnerability", VulnerabilityID: "CVE-2099-0001", PackageName: "example-package", PackageEcosystem: "npm", InstalledVersion: "1.0.0", FilePath: "app/package-lock.json", SourceStatus: SourceStatusActive},
+				Observation: Observation{ID: source + "-observation", Source: source, SourceFindingID: source + "-native", FindingID: source + "-finding", IngestRunID: source + "-run", Fingerprint: "synthetic-fingerprint", ObservedAt: at.Add(-2 * time.Minute)},
 			},
-			Run:        IngestRun{ID: source+"-run", Connector: source, Scope: source+"-scope", StartedAt: at.Add(-3*time.Minute), FinishedAt: &finished, Result: IngestResultSuccess, Coverage: IngestCoverageFull},
+			Run:        IngestRun{ID: source + "-run", Connector: source, Scope: source + "-scope", StartedAt: at.Add(-3 * time.Minute), FinishedAt: &finished, Result: IngestResultSuccess, Coverage: IngestCoverageFull},
 			SnapshotID: "explicit-synthetic-revision",
 		}
 	}
@@ -53,7 +53,7 @@ func TestCompareFindingEvidenceConservativeClassification(t *testing.T) {
 		{"unknown_coverage", func(e *ComparisonEvidence) { e.Run.Coverage = IngestCoverageUnknown }, true, false, "right_incomplete_coverage"},
 		{"partial_run", func(e *ComparisonEvidence) { e.Run.Result = IngestResultPartial }, true, false, "right_incomplete_coverage"},
 		{"failed_run", func(e *ComparisonEvidence) { e.Run.Result = IngestResultFailed }, true, false, "right_incomplete_coverage"},
-		{"stale_observation", func(e *ComparisonEvidence) { e.Observation.ObservedAt = at.Add(-48*time.Hour) }, true, false, "right_invalid_or_stale_observation"},
+		{"stale_observation", func(e *ComparisonEvidence) { e.Observation.ObservedAt = at.Add(-48 * time.Hour) }, true, false, "right_invalid_or_stale_observation"},
 		{"future_observation", func(e *ComparisonEvidence) { e.Observation.ObservedAt = at.Add(time.Hour) }, true, false, "right_invalid_or_stale_observation"},
 		{"missing_observation", func(e *ComparisonEvidence) { e.Observation = Observation{} }, true, false, "unsupported_source_pair"},
 		{"unfinished_run", func(e *ComparisonEvidence) { e.Run.FinishedAt = nil }, true, false, "right_invalid_or_stale_observation"},

@@ -40,10 +40,10 @@ func CompareFindingEvidence(a, b ComparisonEvidence, at time.Time, maxAge time.D
 	if !out.SameCVE {
 		out.Reasons = append(out.Reasons, "not_same_cve")
 	}
-	if !((a.Observation.Source == "dependabot" &&
-		b.Observation.Source == "trivy") ||
-		(a.Observation.Source == "trivy" &&
-		b.Observation.Source == "dependabot")) {
+	aSource, bSource := a.Observation.Source, b.Observation.Source
+	supported := (aSource == "dependabot" && bSource == "trivy") ||
+		(aSource == "trivy" && bSource == "dependabot")
+	if !supported {
 		out.Reasons = append(out.Reasons, "unsupported_source_pair")
 	}
 	if at.IsZero() || maxAge <= 0 {
@@ -88,30 +88,30 @@ func CompareFindingEvidence(a, b ComparisonEvidence, at time.Time, maxAge time.D
 		e := side.evidence
 		f, o, r := e.Finding, e.Observation, e.Run
 		if comparisonBlank(f.ID) ||
-		comparisonBlank(e.Asset.ID) ||
-		f.AssetID != e.Asset.ID ||
-		comparisonBlank(o.ID) ||
-		o.FindingID != f.ID ||
-		comparisonBlank(o.SourceFindingID) ||
-		comparisonBlank(o.Fingerprint) ||
-		comparisonBlank(r.ID) ||
-		o.IngestRunID != r.ID ||
-		r.Connector != o.Source ||
-		comparisonBlank(r.Scope) {
+			comparisonBlank(e.Asset.ID) ||
+			f.AssetID != e.Asset.ID ||
+			comparisonBlank(o.ID) ||
+			o.FindingID != f.ID ||
+			comparisonBlank(o.SourceFindingID) ||
+			comparisonBlank(o.Fingerprint) ||
+			comparisonBlank(r.ID) ||
+			o.IngestRunID != r.ID ||
+			r.Connector != o.Source ||
+			comparisonBlank(r.Scope) {
 			out.Reasons = append(out.Reasons, side.name+"_unbound_evidence")
 		}
 		if r.Result != IngestResultSuccess || r.Coverage != IngestCoverageFull {
 			out.Reasons = append(out.Reasons, side.name+"_incomplete_coverage")
 		}
 		if o.ObservedAt.IsZero() ||
-		o.ObservedAt.After(at) ||
-		at.Sub(o.ObservedAt) > maxAge ||
-		r.StartedAt.IsZero() ||
-		r.FinishedAt == nil ||
-		r.FinishedAt.Before(r.StartedAt) ||
-		r.FinishedAt.After(at) ||
-		o.ObservedAt.Before(r.StartedAt) ||
-		o.ObservedAt.After(*r.FinishedAt) {
+			o.ObservedAt.After(at) ||
+			at.Sub(o.ObservedAt) > maxAge ||
+			r.StartedAt.IsZero() ||
+			r.FinishedAt == nil ||
+			r.FinishedAt.Before(r.StartedAt) ||
+			r.FinishedAt.After(at) ||
+			o.ObservedAt.Before(r.StartedAt) ||
+			o.ObservedAt.After(*r.FinishedAt) {
 			out.Reasons = append(out.Reasons, side.name+"_invalid_or_stale_observation")
 		}
 		if f.SourceStatus != SourceStatusActive {
