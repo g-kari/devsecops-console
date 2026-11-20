@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -148,12 +147,7 @@ func TestFeedRefreshReceiptsReadPreviewSnapshotAndCLIFullResultParity(t *testing
 		}
 	}
 	// Use the existing offline CLI, not the application or a live listener.
-	binary := filepath.Join(t.TempDir(), "preview-finding")
-	build := exec.Command("go", "build", "-o", binary, "./cmd/preview-finding")
-	build.Dir = filepath.Join("..", "..")
-	if log, err := build.CombinedOutput(); err != nil {
-		t.Fatalf("build existing CLI: %v\n%s", err, log)
-	}
+	binary := buildPreviewFindingCLI(t)
 	command := exec.Command(binary, "--schema", "base")
 	command.Stdin = bytes.NewReader(out.InputSnapshot)
 	result, err := command.Output()
