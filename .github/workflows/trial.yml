@@ -53,7 +53,7 @@ jobs:
       - uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
-          version: v2.20.2
+          version: v2.20.3
           install-only: true
       - name: Build tagless snapshot and verify all checksums
         env:
