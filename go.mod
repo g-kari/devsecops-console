@@ -3,7 +3,7 @@ module github.com/g-kari/dependabot-alert-notice
 go 1.27.4
 
 require (
-	charm.land/bubbletea/v2 v2.1.3
+	charm.land/bubbletea/v2 v2.2.0
 	github.com/charmbracelet/x/ansi v0.12.0
 	github.com/mattn/go-isatty v0.0.24
 	github.com/slack-go/slack v0.36.0
